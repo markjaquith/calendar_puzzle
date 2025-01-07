@@ -134,19 +134,26 @@ impl Day {
 
 fn main() {
     // Create a new board
-    let board = Board::new(5, 5);
+    let board = Board::new(3, 3);
     let mut piece_l = Piece::new('L', vec![(0, 0), (0, 1), (0, 2), (1, 2), (2, 2)]);
-    let mut piece_u = Piece::new('U', vec![(0, 0), (0, 1), (1, 1), (2, 1), (2, 0)]);
+    //let mut piece_u = Piece::new('U', vec![(0, 0), (0, 1), (1, 1), (2, 1), (2, 0)]);
     piece_l.rotate_clockwise();
-    piece_u.rotate_counterclockwise();
+    piece_l.rotate_counterclockwise();
+    //piece_u.rotate_counterclockwise();
     board.display(); // Should start empty.
-    let valid_boards = find_all_valid_boards(&board, &mut [piece_l, piece_u]);
+    let valid_boards = find_all_valid_boards_with_new_piece(&board, &mut piece_l);
 
     println!("Found {} valid boards:", valid_boards.len());
     for (i, valid_board) in valid_boards.iter().enumerate() {
         println!("Board {}:", i + 1);
         valid_board.display();
         println!(); // Add a blank line between boards
+    }
+    let early_return = true;
+
+    // Return without warning.
+    if early_return {
+        return;
     }
 
     // Simulate an interactive selection process
@@ -210,35 +217,33 @@ fn main() {
 }
 
 /// Finds all valid placements and returns a vector of boards representing each placement.
-pub fn find_all_valid_boards(board: &Board, pieces: &mut [Piece]) -> Vec<Board> {
-    let mut valid_boards: Vec<Board> = Vec::new(); // Explicitly define type as Vec<Board>
+pub fn find_all_valid_boards_with_new_piece(board: &Board, piece: &mut Piece) -> Vec<Board> {
+    let mut valid_boards: Vec<Board> = Vec::new();
 
-    for piece in pieces.iter_mut() {
-        for rotation in [
-            Rotation::Zero,
-            Rotation::Ninety,
-            Rotation::OneEighty,
-            Rotation::TwoSeventy,
-        ] {
-            // Rotate the piece to the current orientation
-            while piece.get_rotation() != rotation {
-                piece.rotate_clockwise();
-            }
+    for rotation in [
+        Rotation::Zero,
+        Rotation::Ninety,
+        Rotation::OneEighty,
+        Rotation::TwoSeventy,
+    ] {
+        // Rotate the piece to the current orientation
+        while piece.get_rotation() != rotation {
+            piece.rotate_clockwise();
+        }
 
-            // Try placing the piece in every position on the board
-            for y in 0..board.height {
-                for x in 0..board.width {
-                    if board.can_place_piece(piece, x as i32, y as i32).is_ok() {
-                        let mut new_board = board.clone(); // Clone the current board
-                        new_board.place_piece(piece, x as i32, y as i32); // Place the piece
-                        valid_boards.push(new_board); // Push the owned board
-                    }
+        // Try placing the piece in every position on the board
+        for y in 0..board.height {
+            for x in 0..board.width {
+                if board.can_place_piece(piece, x as i32, y as i32).is_ok() {
+                    let mut new_board = board.clone(); // Clone the current board
+                    new_board.place_piece(piece, x as i32, y as i32); // Place the piece
+                    valid_boards.push(new_board); // Push the owned board
                 }
             }
-
-            // Reset the piece to its original rotation after testing
-            piece.reset_rotation();
         }
+
+        // Reset the piece to its original rotation after testing
+        piece.reset_rotation();
     }
 
     valid_boards
