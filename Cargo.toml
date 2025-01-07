@@ -1,0 +1,8 @@
+[package]
+name = "calendar_puzzle"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.3", features = ["derive"] }
+dialoguer = "0.10"
