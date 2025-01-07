@@ -23,7 +23,9 @@ impl Board {
 
     /// Checks if a piece can be placed at the given base position.
     pub fn can_place_piece(&self, piece: &Piece, base_x: i32, base_y: i32) -> Result<(), String> {
-        for &(x, y) in piece.positions(base_x, base_y).iter() {
+        for &(dx, dy) in piece.current_shape() {
+            let x = base_x + dx;
+            let y = base_y + dy;
             if x < 0 || y < 0 || x >= self.width as i32 || y >= self.height as i32 {
                 return Err(format!("Position ({}, {}) is out of bounds.", x, y));
             }
@@ -38,7 +40,9 @@ impl Board {
     pub fn place_piece(&mut self, piece: &Piece, base_x: i32, base_y: i32) -> bool {
         match self.can_place_piece(piece, base_x, base_y) {
             Ok(_) => {
-                for (x, y) in piece.positions(base_x, base_y) {
+                for &(dx, dy) in piece.current_shape() {
+                    let x = base_x + dx;
+                    let y = base_y + dy;
                     self.grid[y as usize][x as usize] = Some((piece.symbol, piece.color, piece.bg));
                 }
                 true
@@ -68,5 +72,62 @@ impl Board {
             }
             println!(); // Newline after each row
         }
+    }
+
+    /// Scans the board for all contiguous blank areas.
+    /// Returns a vector of sizes of each blank region.
+    pub fn scan_blank_areas(&self) -> Vec<usize> {
+        let mut visited = vec![vec![false; self.width]; self.height];
+        let mut blank_areas = Vec::new();
+
+        for y in 0..self.height {
+            for x in 0..self.width {
+                // Skip visited cells and non-blank cells
+                if visited[y][x] || self.grid[y][x].is_some() {
+                    continue;
+                }
+
+                // Perform flood fill to calculate the size of this blank area
+                let size = self.flood_fill_blank(x, y, &mut visited);
+                blank_areas.push(size);
+            }
+        }
+
+        blank_areas
+    }
+
+    /// Performs a flood fill to calculate the size of a blank area.
+    fn flood_fill_blank(
+        &self,
+        start_x: usize,
+        start_y: usize,
+        visited: &mut Vec<Vec<bool>>,
+    ) -> usize {
+        let mut stack = vec![(start_x, start_y)];
+        let mut size = 0;
+
+        while let Some((x, y)) = stack.pop() {
+            // Skip out-of-bounds or already visited cells
+            if x >= self.width || y >= self.height || visited[y][x] || self.grid[y][x].is_some() {
+                continue;
+            }
+
+            // Mark the cell as visited and increase the size
+            visited[y][x] = true;
+            size += 1;
+
+            // Add neighboring cells to the stack
+            stack.push((x + 1, y)); // Right
+            stack.push((x.wrapping_sub(1), y)); // Left (with wrapping prevention)
+            stack.push((x, y + 1)); // Down
+            stack.push((x, y.wrapping_sub(1))); // Up (with wrapping prevention)
+        }
+
+        size
+    }
+
+    /// Checks if the board contains any dead-end blank areas.
+    pub fn has_dead_end_blanks_smaller_than(&self, max_size: usize) -> bool {
+        self.scan_blank_areas().iter().any(|&size| size < max_size)
     }
 }

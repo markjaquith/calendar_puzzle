@@ -44,22 +44,36 @@ impl Rotation {
 pub struct Piece {
     pub color: Color,
     pub bg: Color,
-    shape: Vec<(i32, i32)>, // Offsets for the piece's shape
-    pub symbol: char,       // Symbol for display
-    pub rotation: Rotation, // Current rotation
+    shape: Vec<(i32, i32)>, // Default (unrotated) shape
+    pub symbol: char,
+    rotation: Rotation,                          // Current rotation
+    precomputed_rotations: Vec<Vec<(i32, i32)>>, // Cached rotations
 }
 
 impl Piece {
-    /// Creates a new Piece with a symbol and shape.
+    /// Creates a new Piece with precomputed rotations.
     pub fn new(
         symbol: char,
         shape: Vec<(i32, i32)>,
         color: (u8, u8, u8),
         bg: (u8, u8, u8),
     ) -> Self {
-        if shape.len() == 0 {
+        if shape.is_empty() {
             panic!("A piece must consist of at least 1 block.");
         }
+
+        // Precompute all rotations
+        let mut precomputed_rotations = Vec::new();
+        let mut current_shape = shape.clone();
+
+        for _ in 0..4 {
+            precomputed_rotations.push(current_shape.clone());
+            current_shape = current_shape
+                .iter()
+                .map(|(x, y)| (*y, -*x)) // Rotate 90° clockwise
+                .collect();
+        }
+
         Piece {
             color: Color::TrueColor {
                 r: color.0,
@@ -74,6 +88,7 @@ impl Piece {
             shape,
             symbol,
             rotation: Rotation::Zero,
+            precomputed_rotations,
         }
     }
 
@@ -99,31 +114,24 @@ impl Piece {
         (max_x + 1, max_y + 1)
     }
 
-    /// Rotates the piece by 90° clockwise.
+    /// Get the current shape based on the current rotation.
+    pub fn current_shape(&self) -> &Vec<(i32, i32)> {
+        &self.precomputed_rotations[self.rotation.to_degrees() as usize / 90]
+    }
+
+    /// Rotate the piece 90° clockwise.
     pub fn rotate_clockwise(&mut self) {
         self.rotation = self.rotation.rotate_clockwise();
-        self.shape = self
-            .shape
-            .iter()
-            .map(|(x, y)| (*y, -*x)) // Apply 90° rotation transformation
-            .collect();
     }
 
-    /// Rotates the piece by 90° counterclockwise.
+    /// Rotate the piece 90° counterclockwise.
     pub fn rotate_counterclockwise(&mut self) {
         self.rotation = self.rotation.rotate_counterclockwise();
-        self.shape = self
-            .shape
-            .iter()
-            .map(|(x, y)| (-*y, *x)) // Apply 90° counterclockwise rotation
-            .collect();
     }
 
-    /// Resets the piece to its default (0°) orientation.
+    /// Reset the piece to its default (0°) orientation.
     pub fn reset_rotation(&mut self) {
-        while self.rotation != Rotation::Zero {
-            self.rotate_clockwise();
-        }
+        self.rotation = Rotation::Zero;
     }
 
     /// Returns the current rotation.

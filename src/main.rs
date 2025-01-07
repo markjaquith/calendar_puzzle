@@ -405,7 +405,6 @@ pub fn find_all_boards_placing_all_pieces(board: Board, pieces: &mut Vec<Piece>)
 pub fn find_all_valid_boards_with_new_piece(board: &Board, piece: &mut Piece) -> Vec<Board> {
     let mut valid_boards: Vec<Board> = Vec::new();
 
-    // TODO: Pre-calculate rotations on piece initialization to save work.
     for rotation in [
         Rotation::Zero,
         Rotation::Ninety,
@@ -423,7 +422,9 @@ pub fn find_all_valid_boards_with_new_piece(board: &Board, piece: &mut Piece) ->
                 if board.can_place_piece(piece, x as i32, y as i32).is_ok() {
                     let mut new_board = board.clone(); // Clone the current board
                     new_board.place_piece(piece, x as i32, y as i32); // Place the piece
-                    valid_boards.push(new_board); // Push the owned board
+                    if !new_board.has_dead_end_blanks_smaller_than(5) {
+                        valid_boards.push(new_board); // Push the owned board
+                    }
                 }
             }
         }
