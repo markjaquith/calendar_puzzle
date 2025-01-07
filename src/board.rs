@@ -1,20 +1,23 @@
 use crate::piece::Piece;
+use colored::Colorize;
 
 #[derive(Debug, Clone)]
 pub struct Board {
-    pub width: usize,             // Width of the board
-    pub height: usize,            // Height of the board
-    grid: Vec<Vec<Option<char>>>, // Stores the symbols of pieces on the board
+    pub width: usize,  // Width of the board
+    pub height: usize, // Height of the board
+    pub grid: Vec<Vec<Option<(char, colored::Color, colored::Color)>>>, // Store symbol and color and bg for each cell
+    blank: char,                                                        // Symbol for empty cells
 }
 
 impl Board {
     /// Creates a new Board with the given dimensions.
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new(width: usize, height: usize, blank: char) -> Self {
         let grid = vec![vec![None; width]; height];
         Board {
             width,
             height,
             grid,
+            blank,
         }
     }
 
@@ -36,7 +39,7 @@ impl Board {
         match self.can_place_piece(piece, base_x, base_y) {
             Ok(_) => {
                 for (x, y) in piece.positions(base_x, base_y) {
-                    self.grid[y as usize][x as usize] = Some(piece.symbol);
+                    self.grid[y as usize][x as usize] = Some((piece.symbol, piece.color, piece.bg));
                 }
                 true
             }
@@ -52,11 +55,18 @@ impl Board {
         for row in &self.grid {
             for cell in row {
                 match cell {
-                    Some(symbol) => print!(" {} ", symbol),
-                    None => print!(" . "),
+                    Some((symbol, color, bg)) => {
+                        print!(
+                            "{}{}{}",
+                            " ".on_color(*bg),
+                            symbol.to_string().color(*color).on_color(*bg),
+                            " ".on_color(*bg),
+                        ); // Apply color to symbol
+                    }
+                    None => print!(" {} ", self.blank),
                 }
             }
-            println!();
+            println!(); // Newline after each row
         }
     }
 }

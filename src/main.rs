@@ -133,24 +133,72 @@ impl Day {
 }
 
 fn main() {
-    // Create a new board
-    let mut board = Board::new(3, 3);
-    let mut piece_l = Piece::new('L', vec![(0, 0), (0, 1), (0, 2), (1, 2), (2, 2)]);
-    let block = Piece::new('X', vec![(0, 0)]);
-    board.place_piece(&block, 1, 1);
-    //let mut piece_u = Piece::new('U', vec![(0, 0), (0, 1), (1, 1), (2, 1), (2, 0)]);
-    piece_l.rotate_clockwise();
-    piece_l.rotate_counterclockwise();
-    //piece_u.rotate_counterclockwise();
-    board.display(); // Should start empty.
-    let valid_boards = find_all_valid_boards_with_new_piece(&board, &mut piece_l);
+    // Define the initial board
+    let width = 3;
+    let height = 3;
+    let mut initial_board = Board::new(width, height, '·');
+    initial_board.place_piece(
+        &Piece::new('☻', vec![(0, 0)], (255, 255, 255), (37, 59, 37)),
+        1,
+        1,
+    );
+    println!("Initial board:");
+    initial_board.display();
+    println!(); // Blank line between boards
 
-    println!("Found {} valid boards:", valid_boards.len());
-    for (i, valid_board) in valid_boards.iter().enumerate() {
-        println!("Board {}:", i + 1);
-        valid_board.display();
-        println!(); // Add a blank line between boards
+    // Define the pieces to place
+    let mut pieces = vec![
+        Piece::new(
+            '■',
+            vec![(0, 0), (0, 1), (0, 2), (1, 2), (2, 2)],
+            (88, 28, 71),
+            (245, 224, 220),
+        ),
+        Piece::new(
+            '▲',
+            vec![(0, 0), (0, 1), (1, 0)],
+            (64, 140, 86),
+            (220, 245, 230),
+        ),
+    ];
+
+    println!("Pieces to place:");
+    for piece in &pieces {
+        // Make an example board just big enough to display this piece.
+        let mut example_board = Board::new(
+            piece.get_dimensions().0 as usize,
+            piece.get_dimensions().1 as usize,
+            ' ',
+        );
+        // Place the piece in the top-left corner for display
+        example_board.place_piece(piece, 0, 0);
+        example_board.display();
+        println!(); // Blank line between boards
     }
+
+    // Generate all valid boards that place all pieces
+    let final_boards = find_all_boards_placing_all_pieces(initial_board, &mut pieces);
+
+    println!(
+        "Found {} boards that successfully place all pieces:",
+        final_boards.len()
+    );
+
+    // Display each valid board
+    for (i, board) in final_boards.iter().enumerate() {
+        println!("Board {}:", i + 1);
+        board.display();
+        println!(); // Blank line between boards
+    }
+
+    // Call an unused function to demonstrate the linter
+    let call_unused_function = false;
+    if call_unused_function {
+        unused_function();
+    }
+}
+
+fn unused_function() {
     let early_return = true;
 
     // Return without warning.
@@ -216,6 +264,34 @@ fn main() {
     // Create and display the selected day
     let selected_day = Day::new(month, day, weekday);
     selected_day.display();
+}
+
+/// Recursively attempts to place all pieces on the board.
+/// Returns a vector of boards that successfully place all pieces.
+pub fn find_all_boards_placing_all_pieces(board: Board, pieces: &mut Vec<Piece>) -> Vec<Board> {
+    // Base case: If no pieces are left, return the current board
+    if pieces.is_empty() {
+        return vec![board];
+    }
+
+    // Get the first piece and generate all valid boards with it
+    let mut piece = pieces.remove(0); // Take ownership of the first piece
+    let valid_boards = find_all_valid_boards_with_new_piece(&board, &mut piece);
+
+    // Container to collect all successful boards
+    let mut all_boards = Vec::new();
+
+    // For each valid board from placing the current piece, recurse with the remaining pieces
+    for valid_board in valid_boards {
+        let mut remaining_pieces = pieces.clone(); // Clone the remaining pieces
+        let boards = find_all_boards_placing_all_pieces(valid_board, &mut remaining_pieces);
+        all_boards.extend(boards); // Add successful boards to the result
+    }
+
+    // Put the piece back for the caller (to avoid modifying the original vector)
+    pieces.insert(0, piece);
+
+    all_boards
 }
 
 /// Finds all valid placements and returns a vector of boards representing each placement.
