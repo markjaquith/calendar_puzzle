@@ -209,15 +209,6 @@ fn main() {
     selected_day.display();
 }
 
-/// A struct to store valid placements of a piece.
-#[derive(Debug)]
-#[allow(dead_code)]
-pub struct Placement {
-    position: (usize, usize), // Position on the board
-    rotation: Rotation,       // Rotation of the piece
-    symbol: char,             // Symbol for the piece
-}
-
 /// Finds all valid placements and returns a vector of boards representing each placement.
 pub fn find_all_valid_boards(board: &Board, pieces: &mut [Piece]) -> Vec<Board> {
     let mut valid_boards: Vec<Board> = Vec::new(); // Explicitly define type as Vec<Board>
