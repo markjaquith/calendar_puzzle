@@ -134,8 +134,10 @@ impl Day {
 
 fn main() {
     // Create a new board
-    let board = Board::new(3, 3);
+    let mut board = Board::new(3, 3);
     let mut piece_l = Piece::new('L', vec![(0, 0), (0, 1), (0, 2), (1, 2), (2, 2)]);
+    let block = Piece::new('X', vec![(0, 0)]);
+    board.place_piece(&block, 1, 1);
     //let mut piece_u = Piece::new('U', vec![(0, 0), (0, 1), (1, 1), (2, 1), (2, 0)]);
     piece_l.rotate_clockwise();
     piece_l.rotate_counterclockwise();

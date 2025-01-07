@@ -48,8 +48,8 @@ pub struct Piece {
 impl Piece {
     /// Creates a new Piece with a symbol and shape.
     pub fn new(symbol: char, shape: Vec<(i32, i32)>) -> Self {
-        if shape.len() != 5 {
-            panic!("A piece must consist of exactly 5 blocks.");
+        if shape.len() == 0 {
+            panic!("A piece must consist of at least 1 block.");
         }
         Piece {
             shape,
