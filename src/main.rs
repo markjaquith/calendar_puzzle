@@ -134,7 +134,7 @@ impl Day {
 
 fn main() {
     // Define the initial board
-    let width = 3;
+    let width = 4;
     let height = 3;
     let mut initial_board = Board::new(width, height, '·');
     initial_board.place_piece(
@@ -159,6 +159,12 @@ fn main() {
             vec![(0, 0), (0, 1), (1, 0)],
             (64, 140, 86),
             (220, 245, 230),
+        ),
+        Piece::new(
+            '◆',
+            vec![(0, 0), (0, 1), (0, 2)],
+            (128, 128, 64),
+            (239, 235, 231),
         ),
     ];
 
