@@ -1,6 +1,8 @@
 mod board;
 mod piece;
 
+use std::io::Write;
+
 use board::Board;
 use piece::{Piece, Rotation};
 
@@ -134,13 +136,30 @@ impl Day {
 
 fn main() {
     // Define the initial board
-    let width = 4;
-    let height = 3;
+    let width = 9;
+    let height = 6;
     let mut initial_board = Board::new(width, height, '·');
     initial_board.place_piece(
         &Piece::new('☻', vec![(0, 0)], (255, 255, 255), (37, 59, 37)),
+        8,
+        0,
+    );
+    initial_board.place_piece(
+        &Piece::new('☺', vec![(0, 0)], (255, 255, 255), (37, 59, 37)),
+        0,
+        0,
+    );
+    initial_board.place_piece(
+        &Piece::new('☼', vec![(0, 0)], (255, 255, 255), (37, 59, 37)),
+        4,
         1,
-        1,
+    );
+
+    // Corner piece
+    initial_board.place_piece(
+        &Piece::new('☗', vec![(0, 0)], (255, 255, 255), (37, 59, 37)),
+        8,
+        5,
     );
     println!("Initial board:");
     initial_board.display();
@@ -148,23 +167,90 @@ fn main() {
 
     // Define the pieces to place
     let mut pieces = vec![
+        // A A A A A
         Piece::new(
-            '■',
+            'A',
+            vec![(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)],
+            (64, 140, 86),
+            (220, 245, 230),
+        ),
+        // B B B B
+        // B
+        Piece::new(
+            'B',
+            vec![(0, 0), (1, 0), (2, 0), (3, 0), (0, 1)],
+            (0, 0, 0),
+            (255, 255, 255),
+        ),
+        // C
+        // C C
+        // C C
+        Piece::new(
+            'C',
+            vec![(0, 0), (0, 1), (1, 1), (0, 2), (1, 2)],
+            (0, 0, 0),
+            (255, 255, 255),
+        ),
+        // D D
+        // D
+        // D D
+        Piece::new(
+            'D',
+            vec![(0, 0), (1, 0), (0, 1), (0, 2), (1, 2)],
+            (128, 128, 64),
+            (239, 235, 231),
+        ),
+        // E
+        // E E E
+        // E
+        Piece::new(
+            'E',
+            vec![(0, 0), (0, 1), (0, 2), (1, 1), (2, 1)],
+            (0, 0, 0),
+            (255, 255, 255),
+        ),
+        // F F F F
+        //   F
+        Piece::new(
+            'F',
+            vec![(0, 0), (1, 0), (2, 0), (3, 0), (1, 1)],
+            (0, 0, 0),
+            (255, 255, 255),
+        ),
+        // G
+        // G
+        // G G G
+        Piece::new(
+            'G',
             vec![(0, 0), (0, 1), (0, 2), (1, 2), (2, 2)],
             (88, 28, 71),
             (245, 224, 220),
         ),
+        // H
+        // H H H
+        //     H
         Piece::new(
-            '▲',
-            vec![(0, 0), (0, 1), (1, 0)],
-            (64, 140, 86),
-            (220, 245, 230),
+            'H',
+            vec![(0, 0), (1, 0), (1, 1), (1, 2), (2, 2)],
+            (0, 0, 0),
+            (255, 255, 255),
         ),
+        //   I I I
+        // I I
         Piece::new(
-            '◆',
-            vec![(0, 0), (0, 1), (0, 2)],
-            (128, 128, 64),
-            (239, 235, 231),
+            'I',
+            vec![(1, 0), (2, 0), (3, 0), (0, 1), (1, 1)],
+            (0, 0, 0),
+            (255, 255, 255),
+        ),
+        //   J
+        // J J
+        //   J J
+        Piece::new(
+            'J',
+            vec![(1, 0), (0, 1), (1, 1), (1, 2), (2, 2)],
+            (0, 0, 0),
+            (255, 255, 255),
         ),
     ];
 
@@ -190,8 +276,14 @@ fn main() {
         final_boards.len()
     );
 
-    // Display each valid board
-    for (i, board) in final_boards.iter().enumerate() {
+    // Display the first 1_000 boards
+    let max_boards_to_display = 1_000;
+    let should_clear_screen = false;
+
+    for (i, board) in final_boards.iter().take(max_boards_to_display).enumerate() {
+        if should_clear_screen {
+            clear_screen();
+        }
         println!("Board {}:", i + 1);
         board.display();
         println!(); // Blank line between boards
@@ -202,6 +294,12 @@ fn main() {
     if call_unused_function {
         unused_function();
     }
+}
+
+fn clear_screen() {
+    // Clear the terminal screen and move the cursor to the top-left
+    print!("\x1b[2J\x1b[H");
+    std::io::stdout().flush().unwrap(); // Ensure the screen is cleared immediately
 }
 
 fn unused_function() {
@@ -277,6 +375,9 @@ fn unused_function() {
 pub fn find_all_boards_placing_all_pieces(board: Board, pieces: &mut Vec<Piece>) -> Vec<Board> {
     // Base case: If no pieces are left, return the current board
     if pieces.is_empty() {
+        println!();
+        board.display();
+        println!();
         return vec![board];
     }
 
@@ -304,6 +405,7 @@ pub fn find_all_boards_placing_all_pieces(board: Board, pieces: &mut Vec<Piece>)
 pub fn find_all_valid_boards_with_new_piece(board: &Board, piece: &mut Piece) -> Vec<Board> {
     let mut valid_boards: Vec<Board> = Vec::new();
 
+    // TODO: Pre-calculate rotations on piece initialization to save work.
     for rotation in [
         Rotation::Zero,
         Rotation::Ninety,
