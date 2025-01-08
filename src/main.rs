@@ -1,10 +1,12 @@
 mod board;
 mod calendar;
 mod piece;
+mod pieces;
 
 use board::Board;
 use calendar::{Day, Month, Weekday};
 use piece::{Piece, Rotation};
+use pieces::{get_corner_piece, get_default_pieces};
 
 use clap::Parser;
 use dialoguer::{theme::ColorfulTheme, Select};
@@ -52,103 +54,14 @@ fn main() {
     );
 
     // Corner piece
-    initial_board.place_piece(
-        &Piece::new(' ', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
-        8,
-        5,
-    );
+    initial_board.place_piece(&get_corner_piece(), 8, 5);
+
     println!("Solving board:");
     initial_board.display();
-    println!(); // Blank line between boards
+    println!();
 
     // Define the pieces to place
-    let mut pieces = vec![
-        // A A A A A
-        Piece::new(
-            'A',
-            vec![(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)],
-            (255, 255, 255), // White foreground
-            (64, 140, 86),   // Green background
-        ),
-        // B B B B
-        // B
-        Piece::new(
-            'B',
-            vec![(0, 0), (1, 0), (2, 0), (3, 0), (0, 1)],
-            (255, 255, 255), // White foreground
-            (0, 102, 204),   // Blue background
-        ),
-        // C
-        // C C
-        // C C
-        Piece::new(
-            'C',
-            vec![(0, 0), (0, 1), (1, 1), (0, 2), (1, 2)],
-            (255, 255, 255), // White foreground
-            (204, 102, 0),   // Orange background
-        ),
-        // D D
-        // D
-        // D D
-        Piece::new(
-            'D',
-            vec![(0, 0), (1, 0), (0, 1), (0, 2), (1, 2)],
-            (0, 0, 0),       // Black foreground
-            (239, 235, 231), // Light beige background
-        ),
-        // E
-        // E E E
-        // E
-        Piece::new(
-            'E',
-            vec![(0, 0), (0, 1), (0, 2), (1, 1), (2, 1)],
-            (0, 0, 0),      // Black foreground
-            (120, 81, 169), // Purple background
-        ),
-        // F F F F
-        //   F
-        Piece::new(
-            'F',
-            vec![(0, 0), (1, 0), (2, 0), (3, 0), (1, 1)],
-            (255, 255, 255), // White foreground
-            (204, 102, 255), // Light purple background
-        ),
-        // G
-        // G
-        // G G G
-        Piece::new(
-            'G',
-            vec![(0, 0), (0, 1), (0, 2), (1, 2), (2, 2)],
-            (255, 255, 255), // White foreground
-            (88, 28, 71),    // Deep magenta background
-        ),
-        // H
-        // H H H
-        //     H
-        Piece::new(
-            'H',
-            vec![(0, 0), (1, 0), (1, 1), (1, 2), (2, 2)],
-            (120, 60, 60),   // Dark reddish-brown foreground
-            (255, 255, 255), // White background
-        ),
-        //   I I I
-        // I I
-        Piece::new(
-            'I',
-            vec![(1, 0), (2, 0), (3, 0), (0, 1), (1, 1)],
-            (255, 255, 255), // White foreground
-            (102, 204, 153), // Soft teal background
-        ),
-        //   J
-        // J J
-        //   J J
-        Piece::new(
-            'J',
-            vec![(1, 0), (0, 1), (1, 1), (1, 2), (2, 2)],
-            (0, 0, 0),       // Black foreground
-            (255, 204, 102), // Light orange background
-        ),
-    ];
+    let mut pieces = get_default_pieces();
 
     if show_pieces {
         println!("Pieces to place:");
