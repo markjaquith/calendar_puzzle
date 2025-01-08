@@ -28,6 +28,11 @@ struct Args {
 }
 
 fn main() {
+    let should_get_input = true;
+    if should_get_input {
+        get_input();
+    }
+
     let args = Args::parse();
     let first = args.first;
     let show_pieces = args.show_pieces;
@@ -100,12 +105,6 @@ fn main() {
         board.display();
         println!(); // Blank line between boards
     }
-
-    // Call an unused function to demonstrate the linter
-    let should_get_input = false;
-    if should_get_input {
-        get_input();
-    }
 }
 
 fn get_input() {
@@ -129,13 +128,13 @@ fn get_input() {
 
     // Choose a day of the week
     let weekdays = Weekday::iter().map(|w| w.to_string()).collect::<Vec<_>>();
-    Select::with_theme(&ColorfulTheme::default())
+    let weekday_index = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Select a day of the week")
         .items(&weekdays)
         .default(0)
         .interact()
         .unwrap();
-    let weekday = Weekday::from_str(&weekdays[0]).unwrap();
+    let weekday = Weekday::from_str(&weekdays[weekday_index]).unwrap();
 
     // Create and display the selected day
     let selected_day = Day::new(month, day, weekday);
