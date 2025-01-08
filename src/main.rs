@@ -11,7 +11,9 @@ use pieces::{get_corner_piece, get_default_pieces};
 use clap::Parser;
 use dialoguer::{theme::ColorfulTheme, Select};
 use rayon::prelude::*;
+use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
+use strum::IntoEnumIterator;
 
 /// Command-line arguments
 #[derive(Parser)]
@@ -100,47 +102,21 @@ fn main() {
     }
 
     // Call an unused function to demonstrate the linter
-    let call_unused_function = false;
-    if call_unused_function {
-        unused_function();
+    let should_get_input = false;
+    if should_get_input {
+        get_input();
     }
 }
 
-fn unused_function() {
-    let months = vec![
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-    ];
-
-    let weekdays = vec![
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-    ];
-
-    // Choose a month
+fn get_input() {
+    let months = Month::iter().map(|m| m.to_string()).collect::<Vec<_>>();
     let month_index = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Select a month")
         .items(&months)
         .default(0)
         .interact()
         .unwrap();
-
-    let month = Month::from_index(month_index);
+    let month = Month::from_str(&months[month_index]).unwrap();
 
     // Choose a day
     let day = Select::with_theme(&ColorfulTheme::default())
@@ -152,14 +128,14 @@ fn unused_function() {
         + 1;
 
     // Choose a day of the week
-    let weekday_index = Select::with_theme(&ColorfulTheme::default())
+    let weekdays = Weekday::iter().map(|w| w.to_string()).collect::<Vec<_>>();
+    Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Select a day of the week")
         .items(&weekdays)
         .default(0)
         .interact()
         .unwrap();
-
-    let weekday = Weekday::from_index(weekday_index);
+    let weekday = Weekday::from_str(&weekdays[0]).unwrap();
 
     // Create and display the selected day
     let selected_day = Day::new(month, day, weekday);
