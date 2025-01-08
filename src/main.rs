@@ -4,7 +4,7 @@ mod piece;
 mod pieces;
 
 use board::Board;
-use calendar::{Day, Month, Weekday};
+use calendar::{Day, Month, MonthDay, Weekday};
 use piece::{Piece, Rotation};
 use pieces::{get_corner_piece, get_default_pieces};
 
@@ -28,10 +28,7 @@ struct Args {
 }
 
 fn main() {
-    let should_get_input = true;
-    if should_get_input {
-        get_input();
-    }
+    let day = select_day();
 
     let args = Args::parse();
     let first = args.first;
@@ -40,28 +37,28 @@ fn main() {
     // Atomic flag for tracking whether a valid board has been found.
     let found = AtomicBool::new(false);
 
+    // Corner coordinates
+    let corner_coordinates = (8, 5);
+
     // Define the initial board
     let width = 9;
     let height = 6;
     let mut initial_board = Board::new(width, height, '·');
     initial_board.place_piece(
         &Piece::new('☻', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
-        8,
-        0,
+        day.month.to_coordinates(),
     );
     initial_board.place_piece(
-        &Piece::new('☺', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
-        0,
-        0,
+        &Piece::new('◉', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
+        day.day.to_coordinates(),
     );
     initial_board.place_piece(
         &Piece::new('☼', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
-        4,
-        1,
+        day.weekday.to_coordinates(),
     );
 
     // Corner piece
-    initial_board.place_piece(&get_corner_piece(), 8, 5);
+    initial_board.place_piece(&get_corner_piece(), corner_coordinates);
 
     println!("Solving board:");
     initial_board.display();
@@ -80,9 +77,9 @@ fn main() {
                 ' ',
             );
             // Place the piece in the top-left corner for display
-            example_board.place_piece(piece, 0, 0);
+            example_board.place_piece(piece, (0, 0));
             example_board.display();
-            println!(); // Blank line between boards
+            println!();
         }
     }
 
@@ -103,11 +100,13 @@ fn main() {
     for (i, board) in final_boards.iter().take(max_boards_to_display).enumerate() {
         println!("Board {}:", i + 1);
         board.display();
-        println!(); // Blank line between boards
+        println!();
     }
 }
 
-fn get_input() {
+/// Gets input from the user to create a `Day` struct
+fn select_day() -> Day {
+    // Choose a month
     let months = Month::iter().map(|m| m.to_string()).collect::<Vec<_>>();
     let month_index = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Select a month")
@@ -117,14 +116,16 @@ fn get_input() {
         .unwrap();
     let month = Month::from_str(&months[month_index]).unwrap();
 
-    // Choose a day
-    let day = Select::with_theme(&ColorfulTheme::default())
+    // Choose a month day
+    let month_day_index = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Select a day of the month")
         .items(&(1..=31).map(|d| d.to_string()).collect::<Vec<_>>())
         .default(0)
         .interact()
-        .unwrap() as u8
-        + 1;
+        .unwrap();
+
+    let day = MonthDay::new((month_day_index + 1) as u8).expect("Invalid day of the month");
+    let _ = day.is_valid_in_month(&month) || panic!("Invalid day/month combo");
 
     // Choose a day of the week
     let weekdays = Weekday::iter().map(|w| w.to_string()).collect::<Vec<_>>();
@@ -136,9 +137,7 @@ fn get_input() {
         .unwrap();
     let weekday = Weekday::from_str(&weekdays[weekday_index]).unwrap();
 
-    // Create and display the selected day
-    let selected_day = Day::new(month, day, weekday);
-    selected_day.display();
+    Day::new(month, day, weekday)
 }
 
 /// Recursively attempts to place all pieces on the board.
@@ -151,6 +150,8 @@ pub fn find_all_boards_placing_all_pieces(
 ) -> Vec<Board> {
     // If no pieces are left, return the current board
     if pieces.is_empty() {
+        // If the `--first` flag is set and a board has been found, mark it as found so other
+        // threads can terminate early.
         if first {
             found.store(true, Ordering::Relaxed);
         }
@@ -161,11 +162,11 @@ pub fn find_all_boards_placing_all_pieces(
     let mut piece = pieces.remove(0);
     let valid_boards = find_all_valid_boards_with_new_piece(&board, &mut piece);
 
-    // Use parallel iterator to process valid boards
+    // Use parallel iterator to process the valid boards
     let all_boards: Vec<Board> = valid_boards
         .into_par_iter() // Convert to parallel iterator
         .flat_map(|valid_board| {
-            if found.load(Ordering::Relaxed) && first {
+            if first && found.load(Ordering::Relaxed) {
                 return vec![]; // Terminate early if `--first` is set and a board is found
             }
             let mut remaining_pieces = pieces.clone();
@@ -197,9 +198,9 @@ pub fn find_all_valid_boards_with_new_piece(board: &Board, piece: &mut Piece) ->
         // Try placing the piece in every position on the board
         for y in 0..board.height {
             for x in 0..board.width {
-                if board.can_place_piece(piece, x as i32, y as i32).is_ok() {
+                if board.can_place_piece(piece, (x as i32, y as i32)).is_ok() {
                     let mut new_board = board.clone(); // Clone the current board
-                    new_board.place_piece(piece, x as i32, y as i32); // Place the piece
+                    new_board.place_piece(piece, (x as i32, y as i32)); // Place the piece
                     if !new_board.has_dead_end_blanks_smaller_than(5) {
                         valid_boards.push(new_board); // Push the owned board
                     }

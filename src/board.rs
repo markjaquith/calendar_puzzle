@@ -22,7 +22,8 @@ impl Board {
     }
 
     /// Checks if a piece can be placed at the given base position.
-    pub fn can_place_piece(&self, piece: &Piece, base_x: i32, base_y: i32) -> Result<(), String> {
+    pub fn can_place_piece(&self, piece: &Piece, coordinates: (i32, i32)) -> Result<(), String> {
+        let (base_x, base_y) = coordinates;
         for &(dx, dy) in piece.current_shape() {
             let x = base_x + dx;
             let y = base_y + dy;
@@ -37,8 +38,9 @@ impl Board {
     }
 
     /// Places a piece on the board if it fits.
-    pub fn place_piece(&mut self, piece: &Piece, base_x: i32, base_y: i32) -> bool {
-        match self.can_place_piece(piece, base_x, base_y) {
+    pub fn place_piece(&mut self, piece: &Piece, coordinates: (i32, i32)) -> bool {
+        let (base_x, base_y) = coordinates;
+        match self.can_place_piece(piece, coordinates) {
             Ok(_) => {
                 for &(dx, dy) in piece.current_shape() {
                     let x = base_x + dx;
