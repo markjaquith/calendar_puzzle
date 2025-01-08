@@ -8,6 +8,7 @@ use calendar::{Day, Month, MonthDay, Weekday};
 use piece::{Piece, Rotation};
 use pieces::{get_corner_piece, get_default_pieces};
 
+use chrono::Datelike;
 use clap::Parser;
 use dialoguer::{theme::ColorfulTheme, Select};
 use rayon::prelude::*;
@@ -18,21 +19,35 @@ use strum::IntoEnumIterator;
 /// Command-line arguments
 #[derive(Parser)]
 struct Args {
-    // Stop as soon as the first valid board is found
-    #[arg(short, long)]
-    first: bool,
+    // Show all solutions
+    #[arg(short, long, default_value = "false")]
+    all: bool,
 
     //  Show the pieces to place.
     #[arg(long = "show-pieces")]
     show_pieces: bool,
+
+    #[arg(short, long)]
+    today: bool,
 }
 
 fn main() {
-    let day = select_day();
-
     let args = Args::parse();
-    let first = args.first;
+    let all = args.all;
+    let first = !all;
     let show_pieces = args.show_pieces;
+    let today = args.today;
+    let now = chrono::Local::now();
+
+    let mut day = Day::new(
+        Month::from_str(&now.format("%B").to_string()).unwrap(),
+        MonthDay::new(now.day() as u8).unwrap(),
+        Weekday::from_str(&now.format("%A").to_string()).unwrap(),
+    );
+
+    if !today {
+        day = select_day();
+    }
 
     // Atomic flag for tracking whether a valid board has been found.
     let found = AtomicBool::new(false);
@@ -60,7 +75,7 @@ fn main() {
     // Corner piece
     initial_board.place_piece(&get_corner_piece(), corner_coordinates);
 
-    println!("Solving board:");
+    println!("{}, {} {}", day.weekday, day.month, day.day);
     initial_board.display();
     println!();
 
@@ -98,7 +113,10 @@ fn main() {
     let max_boards_to_display = 1_000;
 
     for (i, board) in final_boards.iter().take(max_boards_to_display).enumerate() {
-        println!("Board {}:", i + 1);
+        if all {
+            println!("Solution {}:", i + 1);
+        }
+
         board.display();
         println!();
     }
