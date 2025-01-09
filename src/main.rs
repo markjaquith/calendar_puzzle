@@ -134,10 +134,12 @@ fn select_day() -> Day {
         .unwrap();
     let month = Month::from_str(&months[month_index]).unwrap();
 
+    let day_count = month.day_count();
+
     // Choose a month day
     let month_day_index = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Select a day of the month")
-        .items(&(1..=31).map(|d| d.to_string()).collect::<Vec<_>>())
+        .items(&(1..=day_count).map(|d| d.to_string()).collect::<Vec<_>>())
         .default(0)
         .interact()
         .unwrap();

@@ -52,6 +52,20 @@ impl Month {
             Month::December => (3, 5),
         }
     }
+
+    pub fn day_count(&self) -> u8 {
+        match self {
+            Month::January
+            | Month::March
+            | Month::May
+            | Month::July
+            | Month::August
+            | Month::October
+            | Month::December => 31,
+            Month::April | Month::June | Month::September | Month::November => 30,
+            Month::February => 29,
+        }
+    }
 }
 
 /// Represents the days of the week.
