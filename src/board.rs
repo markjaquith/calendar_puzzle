@@ -1,5 +1,6 @@
 use crate::piece::Piece;
 use colored::Colorize;
+use std::hash::{Hash, Hasher};
 
 #[derive(Debug, Clone)]
 pub struct Board {
@@ -56,24 +57,32 @@ impl Board {
         }
     }
 
-    /// Displays the board in a simple ASCII format.
-    pub fn display(&self) {
+    /// Returns the display representation of the board as a String, including colors.
+    pub fn get_display(&self) -> String {
+        let mut display = String::new();
         for row in &self.grid {
             for cell in row {
                 match cell {
                     Some((symbol, color, bg)) => {
-                        print!(
+                        let colored_symbol = format!(
                             "{}{}{}",
                             " ".on_color(*bg),
                             symbol.to_string().color(*color).on_color(*bg),
                             " ".on_color(*bg),
-                        ); // Apply color to symbol
+                        );
+                        display.push_str(&colored_symbol);
                     }
-                    None => print!(" {} ", self.blank),
+                    None => display.push_str(&format!(" {} ", self.blank)),
                 }
             }
-            println!(); // Newline after each row
+            display.push('\n'); // Newline after each row
         }
+        display
+    }
+
+    /// Displays the board in a simple ASCII format.
+    pub fn display(&self) {
+        println!("{}", self.get_display());
     }
 
     /// Scans the board for all contiguous blank areas.
@@ -131,5 +140,19 @@ impl Board {
     /// Checks if the board contains any dead-end blank areas.
     pub fn has_dead_end_blanks_smaller_than(&self, max_size: usize) -> bool {
         self.scan_blank_areas().iter().any(|&size| size < max_size)
+    }
+}
+
+impl PartialEq for Board {
+    fn eq(&self, other: &Self) -> bool {
+        self.get_display() == other.get_display()
+    }
+}
+
+impl Eq for Board {}
+
+impl Hash for Board {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.get_display().hash(state);
     }
 }
