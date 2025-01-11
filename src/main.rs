@@ -8,7 +8,6 @@ use calendar::{Day, Month, MonthDay, Weekday};
 use piece::Piece;
 use pieces::{get_corner_piece, get_default_pieces};
 
-use chrono::Datelike;
 use clap::Parser;
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::str::FromStr;
@@ -36,17 +35,8 @@ fn main() {
     let first = !all;
     let show_pieces = args.show_pieces;
     let today = args.today;
-    let now = chrono::Local::now();
 
-    let mut day = Day::new(
-        Month::from_str(&now.format("%B").to_string()).unwrap(),
-        MonthDay::new(now.day() as u8).unwrap(),
-        Weekday::from_str(&now.format("%A").to_string()).unwrap(),
-    );
-
-    if !today {
-        day = select_day();
-    }
+    let day = if today { Day::today() } else { select_day() };
 
     // Atomic flag for tracking whether a valid board has been found.
     let found = AtomicBool::new(false);

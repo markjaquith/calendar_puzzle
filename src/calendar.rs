@@ -1,5 +1,8 @@
 use strum_macros::{AsRefStr, Display, EnumIter, EnumString};
 
+use chrono::Datelike;
+use std::str::FromStr;
+
 /// A struct representing a specific day.
 pub struct Day {
     pub month: Month,
@@ -15,6 +18,15 @@ impl Day {
             day,
             weekday,
         }
+    }
+
+    pub fn today() -> Self {
+        let now = chrono::Local::now();
+        Day::new(
+            Month::from_str(&now.format("%B").to_string()).unwrap(),
+            MonthDay::new(now.day() as u8).unwrap(),
+            Weekday::from_str(&now.format("%A").to_string()).unwrap(),
+        )
     }
 }
 
