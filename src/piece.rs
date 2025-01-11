@@ -8,36 +8,13 @@ pub enum Rotation {
     TwoSeventy, // 270°
 }
 
-impl Rotation {
-    /// Rotates the piece 90° clockwise.
-    pub fn rotate_clockwise(self) -> Self {
-        match self {
-            Rotation::Zero => Rotation::Ninety,
-            Rotation::Ninety => Rotation::OneEighty,
-            Rotation::OneEighty => Rotation::TwoSeventy,
-            Rotation::TwoSeventy => Rotation::Zero,
-        }
-    }
-
-    /// Returns the corresponding angle in degrees (if needed).
-    pub fn to_degrees(self) -> i32 {
-        match self {
-            Rotation::Zero => 0,
-            Rotation::Ninety => 90,
-            Rotation::OneEighty => 180,
-            Rotation::TwoSeventy => 270,
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct Piece {
+    pub symbol: char,
     pub color: Color,
     pub bg: Color,
-    shape: Vec<(i32, i32)>, // Default (unrotated) shape
-    pub symbol: char,
-    rotation: Rotation,                          // Current rotation
-    precomputed_rotations: Vec<Vec<(i32, i32)>>, // Cached rotations
+    shape: Vec<(i32, i32)>,          // Default (unrotated) shape
+    rotations: Vec<Vec<(i32, i32)>>, // Precomputed rotations
 }
 
 impl Piece {
@@ -53,16 +30,16 @@ impl Piece {
         }
 
         // Precompute all rotations
-        let mut precomputed_rotations = Vec::new();
-        let mut current_shape = shape.clone();
-
-        for _ in 0..4 {
-            precomputed_rotations.push(current_shape.clone());
-            current_shape = current_shape
-                .iter()
-                .map(|(x, y)| (*y, -*x)) // Rotate 90° clockwise
-                .collect();
-        }
+        let rotations = (0..4)
+            .scan(shape.clone(), |current_shape, _| {
+                let result = current_shape.clone();
+                *current_shape = current_shape
+                    .iter()
+                    .map(|(x, y)| (*y, -*x)) // Rotate 90° clockwise
+                    .collect();
+                Some(result)
+            })
+            .collect();
 
         Piece {
             color: Color::TrueColor {
@@ -77,12 +54,12 @@ impl Piece {
             },
             shape,
             symbol,
-            rotation: Rotation::Zero,
-            precomputed_rotations,
+            rotations,
         }
     }
 
-    pub fn get_dimensions(&self) -> (i32, i32) {
+    /// Get the dimensions of the default (unrotated) shape.
+    pub fn get_default_dimensions(&self) -> (i32, i32) {
         let mut max_x = 0;
         let mut max_y = 0;
         for (x, y) in &self.shape {
@@ -96,23 +73,13 @@ impl Piece {
         (max_x + 1, max_y + 1)
     }
 
-    /// Get the current shape based on the current rotation.
-    pub fn current_shape(&self) -> &Vec<(i32, i32)> {
-        &self.precomputed_rotations[self.rotation.to_degrees() as usize / 90]
-    }
-
-    /// Rotate the piece 90° clockwise.
-    pub fn rotate_clockwise(&mut self) {
-        self.rotation = self.rotation.rotate_clockwise();
-    }
-
-    /// Reset the piece to its default (0°) orientation.
-    pub fn reset_rotation(&mut self) {
-        self.rotation = Rotation::Zero;
-    }
-
-    /// Returns the current rotation.
-    pub fn get_rotation(&self) -> Rotation {
-        self.rotation
+    /// Get the shape at a specific rotation.
+    pub fn rotated_to(&self, rotation: Rotation) -> &Vec<(i32, i32)> {
+        &self.rotations[match rotation {
+            Rotation::Zero => 0,
+            Rotation::Ninety => 1,
+            Rotation::OneEighty => 2,
+            Rotation::TwoSeventy => 3,
+        }]
     }
 }

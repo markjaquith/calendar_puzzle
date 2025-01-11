@@ -5,7 +5,7 @@ mod pieces;
 
 use board::Board;
 use calendar::{Day, Month, MonthDay, Weekday};
-use piece::Piece;
+use piece::{Piece, Rotation};
 use pieces::{get_corner_piece, get_default_pieces};
 
 use clap::Parser;
@@ -43,26 +43,30 @@ fn main() {
         select_day()
     };
 
-    // Atomic flag for tracking whether a valid board has been found.
-    let found_one = AtomicBool::new(false);
-
     // Define the initial board
     let mut initial_board = Board::new(BOARD_WIDTH, BOARD_HEIGHT, '·');
     initial_board.place_piece(
         &Piece::new('☻', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
+        Rotation::Zero,
         day.month.to_coordinates(),
     );
     initial_board.place_piece(
         &Piece::new('◉', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
+        Rotation::Zero,
         day.day.to_coordinates(),
     );
     initial_board.place_piece(
         &Piece::new('☼', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
+        Rotation::Zero,
         day.weekday.to_coordinates(),
     );
 
     // Corner piece
-    initial_board.place_piece(&get_corner_piece(), MISSING_CORNER_COORDINATES);
+    initial_board.place_piece(
+        &get_corner_piece(),
+        Rotation::Zero,
+        MISSING_CORNER_COORDINATES,
+    );
 
     println!("{}, {} {}", day.weekday, day.month, day.day);
     initial_board.display();
@@ -76,20 +80,23 @@ fn main() {
         for piece in &pieces {
             // Make an example board just big enough to display this piece.
             let mut example_board = Board::new(
-                piece.get_dimensions().0 as usize,
-                piece.get_dimensions().1 as usize,
+                piece.get_default_dimensions().0 as usize,
+                piece.get_default_dimensions().1 as usize,
                 ' ',
             );
             // Place the piece in the top-left corner for display
-            example_board.place_piece(piece, (0, 0));
+            example_board.place_piece(piece, Rotation::Zero, (0, 0));
             example_board.display();
             println!();
         }
     }
 
     // Generate all valid boards that place all pieces
-    let final_boards =
-        initial_board.find_boards_placing_all_pieces(&mut pieces, &found_one, args.all);
+    let final_boards = initial_board.find_boards_placing_all_pieces(
+        &mut pieces,
+        &AtomicBool::new(false),
+        args.all,
+    );
 
     if !args.all && final_boards.len() > 1 {
         println!(

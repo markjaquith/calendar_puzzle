@@ -26,10 +26,15 @@ impl Board {
         }
     }
 
-    /// Checks if a piece can be placed at the given base position.
-    pub fn can_place_piece(&self, piece: &Piece, coordinates: (i32, i32)) -> Result<(), String> {
+    /// Checks if a piece can be placed at the given base position and rotation.
+    pub fn can_place_piece(
+        &self,
+        piece: &Piece,
+        rotation: Rotation,
+        coordinates: (i32, i32),
+    ) -> Result<(), String> {
         let (base_x, base_y) = coordinates;
-        for &(dx, dy) in piece.current_shape() {
+        for &(dx, dy) in piece.rotated_to(rotation) {
             let x = base_x + dx;
             let y = base_y + dy;
             if x < 0 || y < 0 || x >= self.width as i32 || y >= self.height as i32 {
@@ -42,12 +47,17 @@ impl Board {
         Ok(())
     }
 
-    /// Places a piece on the board if it fits.
-    pub fn place_piece(&mut self, piece: &Piece, coordinates: (i32, i32)) -> bool {
-        let (base_x, base_y) = coordinates;
-        match self.can_place_piece(piece, coordinates) {
+    /// Places a piece on the board if it fits, at a specific rotation.
+    pub fn place_piece(
+        &mut self,
+        piece: &Piece,
+        rotation: Rotation,
+        coordinates: (i32, i32),
+    ) -> bool {
+        match self.can_place_piece(piece, rotation, coordinates) {
             Ok(_) => {
-                for &(dx, dy) in piece.current_shape() {
+                let (base_x, base_y) = coordinates;
+                for &(dx, dy) in piece.rotated_to(rotation) {
                     let x = base_x + dx;
                     let y = base_y + dy;
                     self.grid[y as usize][x as usize] = Some((piece.symbol, piece.color, piece.bg));
@@ -146,36 +156,30 @@ impl Board {
         self.scan_blank_areas().iter().any(|&size| size < max_size)
     }
 
-    /// Finds child boards that fit a given new piece.
-    pub fn find_all_valid_boards_with_new_piece(&self, piece: &mut Piece) -> Vec<Board> {
+    /// Finds all valid boards by placing a new piece in all possible positions and rotations.
+    pub fn find_all_valid_boards_with_new_piece(&self, piece: &Piece) -> Vec<Board> {
         let mut valid_boards: Vec<Board> = Vec::new();
 
-        for rotation in [
+        for &rotation in &[
             Rotation::Zero,
             Rotation::Ninety,
             Rotation::OneEighty,
             Rotation::TwoSeventy,
         ] {
-            // Rotate the piece to the current orientation
-            while piece.get_rotation() != rotation {
-                piece.rotate_clockwise();
-            }
-
-            // Try placing the piece in every position on the board
             for y in 0..self.height {
                 for x in 0..self.width {
-                    if self.can_place_piece(piece, (x as i32, y as i32)).is_ok() {
-                        let mut new_board = self.clone(); // Clone the current board
-                        new_board.place_piece(piece, (x as i32, y as i32)); // Place the piece
+                    if self
+                        .can_place_piece(piece, rotation, (x as i32, y as i32))
+                        .is_ok()
+                    {
+                        let mut new_board = self.clone();
+                        new_board.place_piece(piece, rotation, (x as i32, y as i32));
                         if !new_board.has_dead_end_blanks_smaller_than(5) {
-                            valid_boards.push(new_board); // Push the owned board
+                            valid_boards.push(new_board);
                         }
                     }
                 }
             }
-
-            // Reset the piece to its original rotation after testing
-            piece.reset_rotation();
         }
 
         valid_boards
