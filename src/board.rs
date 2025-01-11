@@ -1,4 +1,4 @@
-use crate::piece::Piece;
+use crate::piece::{Piece, Rotation};
 use colored::Colorize;
 use std::hash::{Hash, Hasher};
 
@@ -140,6 +140,41 @@ impl Board {
     /// Checks if the board contains any dead-end blank areas.
     pub fn has_dead_end_blanks_smaller_than(&self, max_size: usize) -> bool {
         self.scan_blank_areas().iter().any(|&size| size < max_size)
+    }
+
+    /// Finds child boards that fit a given new piece.
+    pub fn find_all_valid_boards_with_new_piece(&self, piece: &mut Piece) -> Vec<Board> {
+        let mut valid_boards: Vec<Board> = Vec::new();
+
+        for rotation in [
+            Rotation::Zero,
+            Rotation::Ninety,
+            Rotation::OneEighty,
+            Rotation::TwoSeventy,
+        ] {
+            // Rotate the piece to the current orientation
+            while piece.get_rotation() != rotation {
+                piece.rotate_clockwise();
+            }
+
+            // Try placing the piece in every position on the board
+            for y in 0..self.height {
+                for x in 0..self.width {
+                    if self.can_place_piece(piece, (x as i32, y as i32)).is_ok() {
+                        let mut new_board = self.clone(); // Clone the current board
+                        new_board.place_piece(piece, (x as i32, y as i32)); // Place the piece
+                        if !new_board.has_dead_end_blanks_smaller_than(5) {
+                            valid_boards.push(new_board); // Push the owned board
+                        }
+                    }
+                }
+            }
+
+            // Reset the piece to its original rotation after testing
+            piece.reset_rotation();
+        }
+
+        valid_boards
     }
 }
 
