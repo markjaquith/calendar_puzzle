@@ -43,37 +43,32 @@ fn main() {
         select_day()
     };
 
-    // Define the initial board
+    // Create the three calendar pieces.
+    let month_piece = Piece::new('☻', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+    let day_piece = Piece::new('◉', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+    let weekday_piece = Piece::new('☼', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+
+    // Create the corner piece.
+    let corner_piece = get_corner_piece();
+
+    // Define the initial board.
     let mut initial_board = Board::new(BOARD_WIDTH, BOARD_HEIGHT, '·');
-    initial_board.place_piece(
-        &Piece::new('☻', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
-        Rotation::Zero,
-        day.month.to_coordinates(),
-    );
-    initial_board.place_piece(
-        &Piece::new('◉', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
-        Rotation::Zero,
-        day.day.to_coordinates(),
-    );
-    initial_board.place_piece(
-        &Piece::new('☼', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
-        Rotation::Zero,
-        day.weekday.to_coordinates(),
-    );
+
+    // Place the calendar pieces on the board.
+    initial_board.place_piece(&month_piece, Rotation::Zero, day.month.to_coordinates());
+    initial_board.place_piece(&day_piece, Rotation::Zero, day.day.to_coordinates());
+    initial_board.place_piece(&weekday_piece, Rotation::Zero, day.weekday.to_coordinates());
 
     // Corner piece
-    initial_board.place_piece(
-        &get_corner_piece(),
-        Rotation::Zero,
-        MISSING_CORNER_COORDINATES,
-    );
+    initial_board.place_piece(&corner_piece, Rotation::Zero, MISSING_CORNER_COORDINATES);
 
     println!("{}, {} {}", day.weekday, day.month, day.day);
     initial_board.display();
     println!();
 
     // Define the pieces to place
-    let mut pieces = get_default_pieces();
+    let owned_pieces = get_default_pieces();
+    let mut pieces: Vec<&Piece> = owned_pieces.iter().collect();
 
     if args.show_pieces {
         println!("Pieces to place:");

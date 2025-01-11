@@ -8,14 +8,14 @@ use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 #[derive(Debug, Clone)]
-pub struct Board {
-    pub width: usize,  // Width of the board
-    pub height: usize, // Height of the board
-    pub grid: Vec<Vec<Option<(char, colored::Color, colored::Color)>>>, // Store symbol and color and bg for each cell
-    blank: char,                                                        // Symbol for empty cells
+pub struct Board<'a> {
+    pub width: usize,                      // Width of the board
+    pub height: usize,                     // Height of the board
+    pub grid: Vec<Vec<Option<&'a Piece>>>, // Store Piece type for each cell
+    blank: char,                           // Symbol for empty cells
 }
 
-impl Board {
+impl<'a> Board<'a> {
     /// Creates a new Board with the given dimensions.
     pub fn new(width: usize, height: usize, blank: char) -> Self {
         let grid = vec![vec![None; width]; height];
@@ -30,7 +30,7 @@ impl Board {
     /// Checks if a piece can be placed at the given base position and rotation.
     pub fn can_place_piece(
         &self,
-        piece: &Piece,
+        piece: &'a Piece,
         rotation: Rotation,
         coordinates: (i32, i32),
     ) -> Result<(), String> {
@@ -51,7 +51,7 @@ impl Board {
     /// Places a piece on the board if it fits, at a specific rotation.
     pub fn place_piece(
         &mut self,
-        piece: &Piece,
+        piece: &'a Piece,
         rotation: Rotation,
         coordinates: (i32, i32),
     ) -> bool {
@@ -61,7 +61,7 @@ impl Board {
                 for &(dx, dy) in piece.rotated_to(rotation) {
                     let x = base_x + dx;
                     let y = base_y + dy;
-                    self.grid[y as usize][x as usize] = Some((piece.symbol, piece.color, piece.bg));
+                    self.grid[y as usize][x as usize] = Some(&piece);
                 }
                 true
             }
@@ -78,12 +78,16 @@ impl Board {
         for row in &self.grid {
             for cell in row {
                 match cell {
-                    Some((symbol, color, bg)) => {
+                    Some(piece) => {
                         let colored_symbol = format!(
                             "{}{}{}",
-                            " ".on_color(*bg),
-                            symbol.to_string().color(*color).on_color(*bg),
-                            " ".on_color(*bg),
+                            " ".on_color(piece.bg),
+                            piece
+                                .symbol
+                                .to_string()
+                                .color(piece.color)
+                                .on_color(piece.bg),
+                            " ".on_color(piece.bg),
                         );
                         display.push_str(&colored_symbol);
                     }
@@ -158,8 +162,8 @@ impl Board {
     }
 
     /// Finds all valid boards by placing a new piece in all possible positions and rotations.
-    pub fn find_all_valid_boards_with_new_piece(&self, piece: &Piece) -> Vec<Board> {
-        let mut valid_boards: Vec<Board> = Vec::new();
+    pub fn find_all_valid_boards_with_new_piece(&self, piece: &'a Piece) -> Vec<Board<'a>> {
+        let mut valid_boards: Vec<Board<'a>> = Vec::new();
 
         for rotation in Rotation::iter() {
             for y in 0..self.height {
@@ -185,14 +189,12 @@ impl Board {
     /// Returns a vector of boards that successfully place all pieces.
     pub fn find_boards_placing_all_pieces(
         &self,
-        pieces: &mut Vec<Piece>,
+        pieces: &mut Vec<&'a Piece>,
         found: &AtomicBool,
         find_all: bool,
-    ) -> HashSet<Board> {
+    ) -> HashSet<Board<'a>> {
         // If no pieces are left, return the current board
         if pieces.is_empty() {
-            // If the `--all` flag is not set and a board has been found, mark it as found so other
-            // threads can terminate early.
             if !find_all {
                 found.store(true, Ordering::Relaxed);
             }
@@ -201,22 +203,24 @@ impl Board {
             return final_board;
         }
 
-        // Remove the first piece and get all valid placements
-        let mut piece = pieces.remove(0);
-        let valid_boards = self.find_all_valid_boards_with_new_piece(&mut piece);
+        // Remove the first piece and find all valid placements
+        let piece = pieces.remove(0);
+        let valid_boards = self.find_all_valid_boards_with_new_piece(piece);
 
-        // Use parallel iterator to process the valid boards
-        let all_boards: HashSet<Board> = valid_boards
-            .into_par_iter() // Convert to parallel iterator
+        let all_boards: HashSet<Board<'a>> = valid_boards
+            .into_par_iter()
             .flat_map(|valid_board| {
                 if !find_all && found.load(Ordering::Relaxed) {
-                    return HashSet::new(); // Terminate early if `--all` is not set and a board is found
+                    // Return an empty Vec since Rayon requires a parallelizable collection
+                    Vec::new().into_par_iter()
+                } else {
+                    let mut remaining_pieces = pieces.clone();
+                    valid_board
+                        .find_boards_placing_all_pieces(&mut remaining_pieces, found, find_all)
+                        .into_iter()
+                        .collect::<Vec<_>>() // Convert HashSet into Vec
+                        .into_par_iter() // Use the Vec as a parallel iterator
                 }
-                let mut remaining_pieces = pieces.clone();
-                valid_board
-                    .find_boards_placing_all_pieces(&mut remaining_pieces, found, find_all)
-                    .into_iter() // Convert the returned Vec<Board> into an iterator
-                    .collect::<HashSet<_>>() // Collect into a HashSet to eliminate duplicates within each subresult
             })
             .collect(); // Collect into a HashSet to eliminate duplicates across all results
 
@@ -227,15 +231,15 @@ impl Board {
     }
 }
 
-impl PartialEq for Board {
+impl PartialEq for Board<'_> {
     fn eq(&self, other: &Self) -> bool {
         self.get_display() == other.get_display()
     }
 }
 
-impl Eq for Board {}
+impl Eq for Board<'_> {}
 
-impl Hash for Board {
+impl Hash for Board<'_> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.get_display().hash(state);
     }
