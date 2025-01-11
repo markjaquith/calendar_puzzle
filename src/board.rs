@@ -1,6 +1,7 @@
 use crate::piece::{Piece, Rotation};
 use colored::Colorize;
 use std::hash::{Hash, Hasher};
+use strum::IntoEnumIterator;
 
 use rayon::prelude::*;
 use std::collections::HashSet;
@@ -160,12 +161,7 @@ impl Board {
     pub fn find_all_valid_boards_with_new_piece(&self, piece: &Piece) -> Vec<Board> {
         let mut valid_boards: Vec<Board> = Vec::new();
 
-        for &rotation in &[
-            Rotation::Zero,
-            Rotation::Ninety,
-            Rotation::OneEighty,
-            Rotation::TwoSeventy,
-        ] {
+        for rotation in Rotation::iter() {
             for y in 0..self.height {
                 for x in 0..self.width {
                     if self

@@ -1,6 +1,8 @@
 use colored::Color;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+use strum_macros::EnumIter;
+
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum Rotation {
     Zero,       // 0°
     Ninety,     // 90°
