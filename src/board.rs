@@ -183,17 +183,17 @@ impl Board {
 
     /// Recursively attempts to place all pieces on the board.
     /// Returns a vector of boards that successfully place all pieces.
-    pub fn find_all_boards_placing_all_pieces(
+    pub fn find_boards_placing_all_pieces(
         &self,
         pieces: &mut Vec<Piece>,
         found: &AtomicBool,
-        first: bool,
+        find_all: bool,
     ) -> HashSet<Board> {
         // If no pieces are left, return the current board
         if pieces.is_empty() {
-            // If the `--first` flag is set and a board has been found, mark it as found so other
+            // If the `--all` flag is not set and a board has been found, mark it as found so other
             // threads can terminate early.
-            if first {
+            if !find_all {
                 found.store(true, Ordering::Relaxed);
             }
             let mut final_board = HashSet::new();
@@ -209,12 +209,12 @@ impl Board {
         let all_boards: HashSet<Board> = valid_boards
             .into_par_iter() // Convert to parallel iterator
             .flat_map(|valid_board| {
-                if first && found.load(Ordering::Relaxed) {
-                    return HashSet::new(); // Terminate early if `--first` is set and a board is found
+                if !find_all && found.load(Ordering::Relaxed) {
+                    return HashSet::new(); // Terminate early if `--all` is not set and a board is found
                 }
                 let mut remaining_pieces = pieces.clone();
                 valid_board
-                    .find_all_boards_placing_all_pieces(&mut remaining_pieces, found, first)
+                    .find_boards_placing_all_pieces(&mut remaining_pieces, found, find_all)
                     .into_iter() // Convert the returned Vec<Board> into an iterator
                     .collect::<HashSet<_>>() // Collect into a HashSet to eliminate duplicates within each subresult
             })

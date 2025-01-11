@@ -14,6 +14,11 @@ use std::str::FromStr;
 use std::sync::atomic::AtomicBool;
 use strum::IntoEnumIterator;
 
+/// Configuration
+const BOARD_WIDTH: usize = 9;
+const BOARD_HEIGHT: usize = 6;
+const MISSING_CORNER_COORDINATES: (i32, i32) = (8, 5);
+
 /// Command-line arguments
 #[derive(Parser)]
 struct Args {
@@ -31,23 +36,18 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let all = args.all;
-    let first = !all;
-    let show_pieces = args.show_pieces;
-    let today = args.today;
 
-    let day = if today { Day::today() } else { select_day() };
+    let day = if args.today {
+        Day::today()
+    } else {
+        select_day()
+    };
 
     // Atomic flag for tracking whether a valid board has been found.
-    let found = AtomicBool::new(false);
-
-    // Corner coordinates
-    let corner_coordinates = (8, 5);
+    let found_one = AtomicBool::new(false);
 
     // Define the initial board
-    let width = 9;
-    let height = 6;
-    let mut initial_board = Board::new(width, height, '·');
+    let mut initial_board = Board::new(BOARD_WIDTH, BOARD_HEIGHT, '·');
     initial_board.place_piece(
         &Piece::new('☻', vec![(0, 0)], (255, 255, 255), (0, 0, 0)),
         day.month.to_coordinates(),
@@ -62,7 +62,7 @@ fn main() {
     );
 
     // Corner piece
-    initial_board.place_piece(&get_corner_piece(), corner_coordinates);
+    initial_board.place_piece(&get_corner_piece(), MISSING_CORNER_COORDINATES);
 
     println!("{}, {} {}", day.weekday, day.month, day.day);
     initial_board.display();
@@ -71,7 +71,7 @@ fn main() {
     // Define the pieces to place
     let mut pieces = get_default_pieces();
 
-    if show_pieces {
+    if args.show_pieces {
         println!("Pieces to place:");
         for piece in &pieces {
             // Make an example board just big enough to display this piece.
@@ -88,20 +88,18 @@ fn main() {
     }
 
     // Generate all valid boards that place all pieces
-    let final_boards = initial_board.find_all_boards_placing_all_pieces(&mut pieces, &found, first);
+    let final_boards =
+        initial_board.find_boards_placing_all_pieces(&mut pieces, &found_one, args.all);
 
-    if !first && final_boards.len() > 1 {
+    if !args.all && final_boards.len() > 1 {
         println!(
             "Found {} boards that successfully place all pieces:",
             final_boards.len()
         );
     }
 
-    // Display the first 1_000 boards
-    let max_boards_to_display = 1_000;
-
-    for (i, board) in final_boards.iter().take(max_boards_to_display).enumerate() {
-        if all {
+    for (i, board) in final_boards.iter().enumerate() {
+        if args.all {
             println!("Solution {}:", i + 1);
         }
 
