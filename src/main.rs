@@ -133,7 +133,6 @@ fn select_day() -> Day {
         .unwrap();
 
     let day = MonthDay::new((month_day_index + 1) as u8).expect("Invalid day of the month");
-    let _ = day.is_valid_in_month(&month) || panic!("Invalid day/month combo");
 
     // Choose a day of the week
     let weekdays = Weekday::iter().map(|w| w.to_string()).collect::<Vec<_>>();
@@ -145,5 +144,11 @@ fn select_day() -> Day {
         .unwrap();
     let weekday = Weekday::from_str(&weekdays[weekday_index]).unwrap();
 
-    Day::new(month, day, weekday)
+    match Day::new(month, day, weekday) {
+        Ok(day) => day,
+        Err(e) => {
+            println!("Error: {:?}", e);
+            std::process::exit(1);
+        }
+    }
 }

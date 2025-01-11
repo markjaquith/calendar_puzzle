@@ -3,6 +3,11 @@ use strum_macros::{AsRefStr, Display, EnumIter, EnumString};
 use chrono::Datelike;
 use std::str::FromStr;
 
+#[derive(Debug)]
+pub enum DayError {
+    InvalidDay,
+}
+
 /// A struct representing a specific day.
 pub struct Day {
     pub month: Month,
@@ -12,21 +17,33 @@ pub struct Day {
 
 impl Day {
     /// Creates a new `Day`.
-    pub fn new(month: Month, day: MonthDay, weekday: Weekday) -> Self {
-        Day {
-            month,
-            day,
-            weekday,
+    pub fn new(month: Month, day: MonthDay, weekday: Weekday) -> Result<Self, DayError> {
+        let valid = match month {
+            Month::April | Month::June | Month::September | Month::November => day <= MonthDay(30),
+            Month::February => day <= MonthDay(29),
+            _ => day <= MonthDay(31),
+        };
+
+        match valid {
+            true => Ok(Day {
+                month,
+                day,
+                weekday,
+            }),
+            false => Err(DayError::InvalidDay),
         }
     }
 
     pub fn today() -> Self {
         let now = chrono::Local::now();
-        Day::new(
+        match Day::new(
             Month::from_str(&now.format("%B").to_string()).unwrap(),
             MonthDay::new(now.day() as u8).unwrap(),
             Weekday::from_str(&now.format("%A").to_string()).unwrap(),
-        )
+        ) {
+            Ok(day) => day,
+            Err(_) => panic!("Invalid day."),
+        }
     }
 }
 
@@ -106,21 +123,9 @@ impl Weekday {
     }
 }
 
-fn is_valid_day(day: u8, month: &Month) -> bool {
-    match month {
-        Month::January
-        | Month::March
-        | Month::May
-        | Month::July
-        | Month::August
-        | Month::October
-        | Month::December => day <= 31,
-        Month::April | Month::June | Month::September | Month::November => day <= 30,
-        Month::February => day <= 29,
-    }
-}
-
+#[derive(Debug, PartialEq, Eq, PartialOrd)]
 pub struct MonthDay(u8);
+
 impl MonthDay {
     pub fn new(day: u8) -> Option<Self> {
         if day > 0 && day <= 31 {
@@ -165,10 +170,6 @@ impl MonthDay {
             31 => (5, 2), // Weird one
             _ => unreachable!(),
         }
-    }
-
-    pub fn is_valid_in_month(&self, month: &Month) -> bool {
-        is_valid_day(self.0, month)
     }
 }
 
