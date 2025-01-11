@@ -1,4 +1,4 @@
-use colored::{Color, Colorize};
+use colored::Color;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Rotation {
@@ -16,16 +16,6 @@ impl Rotation {
             Rotation::Ninety => Rotation::OneEighty,
             Rotation::OneEighty => Rotation::TwoSeventy,
             Rotation::TwoSeventy => Rotation::Zero,
-        }
-    }
-
-    /// Rotates the piece 90° counterclockwise.
-    pub fn rotate_counterclockwise(self) -> Self {
-        match self {
-            Rotation::Zero => Rotation::TwoSeventy,
-            Rotation::Ninety => Rotation::Zero,
-            Rotation::OneEighty => Rotation::Ninety,
-            Rotation::TwoSeventy => Rotation::OneEighty,
         }
     }
 
@@ -92,14 +82,6 @@ impl Piece {
         }
     }
 
-    /// Returns the positions the piece would occupy given a base position.
-    pub fn positions(&self, base_x: i32, base_y: i32) -> Vec<(i32, i32)> {
-        self.shape
-            .iter()
-            .map(|(dx, dy)| (base_x + dx, base_y + dy))
-            .collect()
-    }
-
     pub fn get_dimensions(&self) -> (i32, i32) {
         let mut max_x = 0;
         let mut max_y = 0;
@@ -124,11 +106,6 @@ impl Piece {
         self.rotation = self.rotation.rotate_clockwise();
     }
 
-    /// Rotate the piece 90° counterclockwise.
-    pub fn rotate_counterclockwise(&mut self) {
-        self.rotation = self.rotation.rotate_counterclockwise();
-    }
-
     /// Reset the piece to its default (0°) orientation.
     pub fn reset_rotation(&mut self) {
         self.rotation = Rotation::Zero;
@@ -137,10 +114,5 @@ impl Piece {
     /// Returns the current rotation.
     pub fn get_rotation(&self) -> Rotation {
         self.rotation
-    }
-
-    /// Displays the symbol in its color.
-    pub fn colored_symbol(&self) -> String {
-        format!("{}", self.symbol.to_string().color(self.color))
     }
 }
