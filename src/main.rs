@@ -1,12 +1,10 @@
 mod board;
 mod calendar;
-mod evaluation;
 mod piece;
 mod pieces;
 
 use board::Board;
 use calendar::{Day, Month, MonthDay, Weekday};
-use evaluation::find_all_boards_placing_all_pieces;
 use piece::Piece;
 use pieces::{get_corner_piece, get_default_pieces};
 
@@ -100,8 +98,7 @@ fn main() {
     }
 
     // Generate all valid boards that place all pieces
-    let final_boards =
-        find_all_boards_placing_all_pieces(initial_board, &mut pieces, &found, first);
+    let final_boards = initial_board.find_all_boards_placing_all_pieces(&mut pieces, &found, first);
 
     if !first && final_boards.len() > 1 {
         println!(
