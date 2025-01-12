@@ -3,6 +3,23 @@ use std::str::FromStr;
 use strum::IntoEnumIterator;
 
 use crate::calendar::{Day, Month, MonthDay, Weekday};
+use clap::Parser;
+
+/// Command-line arguments
+#[derive(Parser)]
+pub struct Args {
+    /// Show all solutions, not just the first one.
+    #[arg(short, long, default_value = "false")]
+    pub all: bool,
+
+    ///  Show the pieces to place.
+    #[arg(long = "show-pieces")]
+    pub show_pieces: bool,
+
+    /// Use today's date.
+    #[arg(short, long)]
+    pub today: bool,
+}
 
 /// Gets input from the user to create a `Day` struct
 pub fn select_day() -> Day {

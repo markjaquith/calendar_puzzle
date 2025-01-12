@@ -6,33 +6,17 @@ mod pieces;
 
 use board::Board;
 use calendar::Day;
-use cli::select_day;
+use clap::Parser;
+use cli::{select_day, Args};
 use piece::{Piece, Rotation};
 use pieces::{get_corner_piece, get_default_pieces};
 
-use clap::Parser;
 use std::sync::atomic::AtomicBool;
 
 /// Configuration
 const BOARD_WIDTH: usize = 9;
 const BOARD_HEIGHT: usize = 6;
 const MISSING_CORNER_COORDINATES: (i32, i32) = (8, 5);
-
-/// Command-line arguments
-#[derive(Parser)]
-struct Args {
-    /// Show all solutions, not just the first one.
-    #[arg(short, long, default_value = "false")]
-    all: bool,
-
-    ///  Show the pieces to place.
-    #[arg(long = "show-pieces")]
-    show_pieces: bool,
-
-    /// Use today's date.
-    #[arg(short, long)]
-    today: bool,
-}
 
 fn main() {
     let args = Args::parse();
