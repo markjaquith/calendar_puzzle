@@ -2,21 +2,21 @@ use crate::piece::Piece;
 
 pub fn get_default_pieces() -> Vec<Piece> {
     vec![
-        //   F
         // F F
         //   F F
+        //   F
         Piece::new(
             'F',
-            vec![(1, 0), (0, 1), (1, 1), (1, 2), (2, 2)],
+            vec![(0, 0), (1, 0), (1, 1), (1, 2), (2, 1)],
             (0, 0, 0),       // Black foreground
             (255, 204, 102), // Light orange background
         ),
-        // T
         // T T T
-        // T
+        //   T
+        //   T
         Piece::new(
             'T',
-            vec![(0, 0), (0, 1), (0, 2), (1, 1), (2, 1)],
+            vec![(0, 0), (1, 0), (2, 0), (1, 1), (1, 2)],
             (0, 0, 0),      // Black foreground
             (120, 81, 169), // Purple background
         ),
@@ -55,11 +55,13 @@ pub fn get_default_pieces() -> Vec<Piece> {
             (255, 255, 255), // White foreground
             (88, 28, 71),    // Deep magenta background
         ),
-        //   N N N
+        // N
         // N N
+        //   N
+        //   N
         Piece::new(
             'N',
-            vec![(1, 0), (2, 0), (3, 0), (0, 1), (1, 1)],
+            vec![(0, 0), (0, 1), (1, 1), (1, 2), (1, 3)],
             (255, 255, 255), // White foreground
             (102, 204, 153), // Soft teal background
         ),
