@@ -2,38 +2,14 @@ use crate::piece::Piece;
 
 pub fn get_default_pieces() -> Vec<Piece> {
     vec![
-        // I I I I I
+        //   F
+        // F F
+        //   F F
         Piece::new(
-            'I',
-            vec![(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)],
-            (255, 255, 255), // White foreground
-            (64, 140, 86),   // Green background
-        ),
-        // L L L L
-        // L
-        Piece::new(
-            'L',
-            vec![(0, 0), (1, 0), (2, 0), (3, 0), (0, 1)],
-            (255, 255, 255), // White foreground
-            (0, 102, 204),   // Blue background
-        ),
-        // P
-        // P P
-        // P P
-        Piece::new(
-            'P',
-            vec![(0, 0), (0, 1), (1, 1), (0, 2), (1, 2)],
-            (255, 255, 255), // White foreground
-            (204, 102, 0),   // Orange background
-        ),
-        // U U
-        // U
-        // U U
-        Piece::new(
-            'U',
-            vec![(0, 0), (1, 0), (0, 1), (0, 2), (1, 2)],
+            'F',
+            vec![(1, 0), (0, 1), (1, 1), (1, 2), (2, 2)],
             (0, 0, 0),       // Black foreground
-            (239, 235, 231), // Light beige background
+            (255, 204, 102), // Light orange background
         ),
         // T
         // T T T
@@ -44,22 +20,14 @@ pub fn get_default_pieces() -> Vec<Piece> {
             (0, 0, 0),      // Black foreground
             (120, 81, 169), // Purple background
         ),
-        // Y Y Y Y
-        //   Y
+        // U U
+        // U
+        // U U
         Piece::new(
-            'Y',
-            vec![(0, 0), (1, 0), (2, 0), (3, 0), (1, 1)],
-            (255, 255, 255), // White foreground
-            (204, 102, 255), // Light purple background
-        ),
-        // V
-        // V
-        // V V V
-        Piece::new(
-            'V',
-            vec![(0, 0), (0, 1), (0, 2), (1, 2), (2, 2)],
-            (255, 255, 255), // White foreground
-            (88, 28, 71),    // Deep magenta background
+            'U',
+            vec![(0, 0), (1, 0), (0, 1), (0, 2), (1, 2)],
+            (0, 0, 0),       // Black foreground
+            (239, 235, 231), // Light beige background
         ),
         // Z
         // Z Z Z
@@ -70,6 +38,23 @@ pub fn get_default_pieces() -> Vec<Piece> {
             (120, 60, 60),   // Dark reddish-brown foreground
             (255, 255, 255), // White background
         ),
+        // L L L L
+        // L
+        Piece::new(
+            'L',
+            vec![(0, 0), (1, 0), (2, 0), (3, 0), (0, 1)],
+            (255, 255, 255), // White foreground
+            (0, 102, 204),   // Blue background
+        ),
+        // V
+        // V
+        // V V V
+        Piece::new(
+            'V',
+            vec![(0, 0), (0, 1), (0, 2), (1, 2), (2, 2)],
+            (255, 255, 255), // White foreground
+            (88, 28, 71),    // Deep magenta background
+        ),
         //   N N N
         // N N
         Piece::new(
@@ -78,14 +63,29 @@ pub fn get_default_pieces() -> Vec<Piece> {
             (255, 255, 255), // White foreground
             (102, 204, 153), // Soft teal background
         ),
-        //   F
-        // F F
-        //   F F
+        // Y Y Y Y
+        //   Y
         Piece::new(
-            'F',
-            vec![(1, 0), (0, 1), (1, 1), (1, 2), (2, 2)],
-            (0, 0, 0),       // Black foreground
-            (255, 204, 102), // Light orange background
+            'Y',
+            vec![(0, 0), (1, 0), (2, 0), (3, 0), (1, 1)],
+            (255, 255, 255), // White foreground
+            (204, 102, 255), // Light purple background
+        ),
+        // P
+        // P P
+        // P P
+        Piece::new(
+            'P',
+            vec![(0, 0), (0, 1), (1, 1), (0, 2), (1, 2)],
+            (255, 255, 255), // White foreground
+            (204, 102, 0),   // Orange background
+        ),
+        // I I I I I
+        Piece::new(
+            'I',
+            vec![(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)],
+            (255, 255, 255), // White foreground
+            (64, 140, 86),   // Green background
         ),
     ]
 }
