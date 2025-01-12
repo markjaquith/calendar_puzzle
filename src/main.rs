@@ -21,14 +21,15 @@ const MISSING_CORNER_COORDINATES: (i32, i32) = (8, 5);
 /// Command-line arguments
 #[derive(Parser)]
 struct Args {
-    // Show all solutions
+    /// Show all solutions, not just the first one.
     #[arg(short, long, default_value = "false")]
     all: bool,
 
-    //  Show the pieces to place.
+    ///  Show the pieces to place.
     #[arg(long = "show-pieces")]
     show_pieces: bool,
 
+    /// Use today's date.
     #[arg(short, long)]
     today: bool,
 }
