@@ -157,8 +157,10 @@ impl<'a> Board<'a> {
     }
 
     /// Checks if the board contains any dead-end blank areas.
-    pub fn has_dead_end_blanks_smaller_than(&self, max_size: usize) -> bool {
-        self.scan_blank_areas().iter().any(|&size| size < max_size)
+    pub fn has_dead_end_blanks_not_divisible_by(&self, divisible_by: usize) -> bool {
+        self.scan_blank_areas()
+            .iter()
+            .any(|&size| size % divisible_by != 0)
     }
 
     /// Finds all valid boards by placing a new piece in all possible positions and rotations.
@@ -174,7 +176,7 @@ impl<'a> Board<'a> {
                     {
                         let mut new_board = self.clone();
                         new_board.place_piece(piece, rotation, (x as i32, y as i32));
-                        if !new_board.has_dead_end_blanks_smaller_than(5) {
+                        if !new_board.has_dead_end_blanks_not_divisible_by(5) {
                             valid_boards.push(new_board);
                         }
                     }
