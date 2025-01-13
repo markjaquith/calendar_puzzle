@@ -7,7 +7,7 @@ mod pieces;
 use board::Board;
 use clap::Parser;
 use cli::Args;
-use piece::{Piece, Rotation};
+use piece::{Piece, Placement, Rotation};
 use pieces::Pieces;
 
 use std::sync::atomic::AtomicBool;
@@ -34,7 +34,7 @@ fn main() {
                 ' ',
             );
             // Place the piece in the top-left corner for display
-            example_board.place_piece(piece, Rotation::Zero, (0, 0));
+            example_board.place_piece(piece, Placement::new(Rotation::Zero, 0, 0));
             example_board.display();
             println!();
         }

@@ -1,5 +1,5 @@
 use crate::calendar::Day;
-use crate::piece::{Piece, Rotation};
+use crate::piece::{Piece, Placement, Rotation};
 use crate::pieces::Pieces;
 use colored::Colorize;
 use lazy_static::lazy_static;
@@ -47,30 +47,48 @@ impl<'a> Board<'a> {
         let mut board = Board::new(BOARD_WIDTH, BOARD_HEIGHT, '·');
 
         // Place the calendar pieces on the board.
-        board.place_piece(&*MONTH_PIECE, Rotation::Zero, day.month.to_coordinates());
-        board.place_piece(&*DAY_PIECE, Rotation::Zero, day.day.to_coordinates());
+        board.place_piece(
+            &*MONTH_PIECE,
+            Placement::new(
+                Rotation::Zero,
+                day.month.to_coordinates().0,
+                day.month.to_coordinates().1,
+            ),
+        );
+        board.place_piece(
+            &*DAY_PIECE,
+            Placement::new(
+                Rotation::Zero,
+                day.day.to_coordinates().0,
+                day.day.to_coordinates().1,
+            ),
+        );
         board.place_piece(
             &*WEEKDAY_PIECE,
-            Rotation::Zero,
-            day.weekday.to_coordinates(),
+            Placement::new(
+                Rotation::Zero,
+                day.weekday.to_coordinates().0,
+                day.weekday.to_coordinates().1,
+            ),
         );
 
         // Place the corner piece on the board.
-        board.place_piece(&corner_piece, Rotation::Zero, MISSING_CORNER_COORDINATES);
+        board.place_piece(
+            &corner_piece,
+            Placement::new(
+                Rotation::Zero,
+                MISSING_CORNER_COORDINATES.0,
+                MISSING_CORNER_COORDINATES.1,
+            ),
+        );
         board
     }
 
     /// Checks if a piece can be placed at the given base position and rotation.
-    pub fn can_place_piece(
-        &self,
-        piece: &'a Piece,
-        rotation: Rotation,
-        coordinates: (i32, i32),
-    ) -> Result<(), String> {
-        let (base_x, base_y) = coordinates;
-        for &(dx, dy) in piece.rotated_to(rotation) {
-            let x = base_x + dx;
-            let y = base_y + dy;
+    pub fn can_place_piece(&self, piece: &'a Piece, placement: Placement) -> Result<(), String> {
+        for &(dx, dy) in piece.rotated_to(placement.rotation) {
+            let x = placement.x + dx;
+            let y = placement.y + dy;
             if x < 0 || y < 0 || x >= self.width as i32 || y >= self.height as i32 {
                 return Err(format!("Position ({}, {}) is out of bounds.", x, y));
             }
@@ -82,18 +100,12 @@ impl<'a> Board<'a> {
     }
 
     /// Places a piece on the board if it fits, at a specific rotation.
-    pub fn place_piece(
-        &mut self,
-        piece: &'a Piece,
-        rotation: Rotation,
-        coordinates: (i32, i32),
-    ) -> bool {
-        match self.can_place_piece(piece, rotation, coordinates) {
+    pub fn place_piece(&mut self, piece: &'a Piece, placement: Placement) -> bool {
+        match self.can_place_piece(piece, placement) {
             Ok(_) => {
-                let (base_x, base_y) = coordinates;
-                for &(dx, dy) in piece.rotated_to(rotation) {
-                    let x = base_x + dx;
-                    let y = base_y + dy;
+                for &(dx, dy) in piece.rotated_to(placement.rotation) {
+                    let x = placement.x + dx;
+                    let y = placement.y + dy;
                     self.grid[y as usize][x as usize] = Some(&piece);
                 }
                 true
@@ -201,12 +213,9 @@ impl<'a> Board<'a> {
         let mut valid_boards: Vec<Board<'a>> = Vec::new();
 
         for &placement in piece.get_allowed_placements() {
-            if self
-                .can_place_piece(piece, placement.rotation, (placement.x, placement.y))
-                .is_ok()
-            {
+            if self.can_place_piece(piece, placement).is_ok() {
                 let mut new_board = self.clone();
-                new_board.place_piece(piece, placement.rotation, (placement.x, placement.y));
+                new_board.place_piece(piece, placement);
                 if !new_board.has_dead_end_blanks_not_divisible_by(5) {
                     valid_boards.push(new_board);
                 }
