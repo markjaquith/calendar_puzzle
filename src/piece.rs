@@ -87,17 +87,11 @@ impl Piece {
 
     /// Get the dimensions of the default (unrotated) shape.
     pub fn get_default_dimensions(&self) -> (i32, i32) {
-        let mut max_x = 0;
-        let mut max_y = 0;
-        for (x, y) in &self.shape {
-            if *x > max_x {
-                max_x = *x;
-            }
-            if *y > max_y {
-                max_y = *y;
-            }
-        }
-        (max_x + 1, max_y + 1)
+        // Iterate over the shape and find the maximum x and y values of its coordinates
+        // which is therefore the width and height of the shape.
+        self.shape.iter().fold((0, 0), |(max_x, max_y), &(x, y)| {
+            (max_x.max(x), max_y.max(y))
+        })
     }
 
     /// Get the shape at a specific rotation.
