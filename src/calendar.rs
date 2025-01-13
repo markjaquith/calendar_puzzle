@@ -3,6 +3,8 @@ use strum_macros::{AsRefStr, Display, EnumIter, EnumString};
 use chrono::Datelike;
 use std::str::FromStr;
 
+use crate::piece::Coordinates;
+
 #[derive(Debug)]
 pub enum DayError {
     InvalidDay,
@@ -65,7 +67,7 @@ pub enum Month {
 }
 
 impl Month {
-    pub fn to_coordinates(&self) -> (i32, i32) {
+    pub fn to_coordinates(&self) -> Coordinates {
         match self {
             Month::January => (0, 0),
             Month::February => (1, 0),
@@ -110,7 +112,7 @@ pub enum Weekday {
 }
 
 impl Weekday {
-    pub fn to_coordinates(&self) -> (i32, i32) {
+    pub fn to_coordinates(&self) -> Coordinates {
         match self {
             Weekday::Monday => (7, 0),
             Weekday::Tuesday => (8, 0),
@@ -135,7 +137,7 @@ impl MonthDay {
         }
     }
 
-    pub fn to_coordinates(&self) -> (i32, i32) {
+    pub fn to_coordinates(&self) -> Coordinates {
         match self.0 {
             1 => (4, 0),
             2 => (5, 0),

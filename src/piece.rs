@@ -14,7 +14,7 @@ pub enum Rotation {
     TwoSeventy, // 270°
 }
 
-type Coordinates = (i32, i32);
+pub type Coordinates = (i32, i32);
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Placement {
@@ -38,8 +38,8 @@ pub struct Piece {
     pub symbol: char,
     pub color: Color,
     pub bg: Color,
-    shape: Vec<(i32, i32)>,             // Default (unrotated) shape
-    rotations: Vec<Vec<(i32, i32)>>,    // Precomputed rotations
+    shape: Vec<Coordinates>,            // Default (unrotated) shape
+    rotations: Vec<Vec<Coordinates>>,   // Precomputed rotations
     allowed_placements: Vec<Placement>, // Allowed placements for this piece
 }
 
@@ -47,7 +47,7 @@ impl Piece {
     /// Creates a new Piece with precomputed rotations.
     pub fn new(
         symbol: char,
-        shape: Vec<(i32, i32)>,
+        shape: Vec<Coordinates>,
         color: (u8, u8, u8),
         bg: (u8, u8, u8),
     ) -> Self {
@@ -101,7 +101,7 @@ impl Piece {
     }
 
     /// Get the shape at a specific rotation.
-    pub fn rotated_to(&self, rotation: Rotation) -> &Vec<(i32, i32)> {
+    pub fn rotated_to(&self, rotation: Rotation) -> &Vec<Coordinates> {
         &self.rotations[match rotation {
             Rotation::Zero => 0,
             Rotation::Ninety => 1,
