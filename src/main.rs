@@ -34,7 +34,7 @@ fn main() {
                 ' ',
             );
             // Place the piece in the top-left corner for display
-            example_board.place_piece(piece, Placement::new(Rotation::Zero, 0, 0));
+            example_board.place_piece(piece, Placement::new(Rotation::Zero, (0, 0)));
             example_board.display();
             println!();
         }

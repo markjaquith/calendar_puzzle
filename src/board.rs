@@ -49,37 +49,21 @@ impl<'a> Board<'a> {
         // Place the calendar pieces on the board.
         board.place_piece(
             &*MONTH_PIECE,
-            Placement::new(
-                Rotation::Zero,
-                day.month.to_coordinates().0,
-                day.month.to_coordinates().1,
-            ),
+            Placement::new(Rotation::Zero, day.month.to_coordinates()),
         );
         board.place_piece(
             &*DAY_PIECE,
-            Placement::new(
-                Rotation::Zero,
-                day.day.to_coordinates().0,
-                day.day.to_coordinates().1,
-            ),
+            Placement::new(Rotation::Zero, day.day.to_coordinates()),
         );
         board.place_piece(
             &*WEEKDAY_PIECE,
-            Placement::new(
-                Rotation::Zero,
-                day.weekday.to_coordinates().0,
-                day.weekday.to_coordinates().1,
-            ),
+            Placement::new(Rotation::Zero, day.weekday.to_coordinates()),
         );
 
         // Place the corner piece on the board.
         board.place_piece(
             &corner_piece,
-            Placement::new(
-                Rotation::Zero,
-                MISSING_CORNER_COORDINATES.0,
-                MISSING_CORNER_COORDINATES.1,
-            ),
+            Placement::new(Rotation::Zero, MISSING_CORNER_COORDINATES),
         );
         board
     }

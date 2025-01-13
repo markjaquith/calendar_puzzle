@@ -14,6 +14,8 @@ pub enum Rotation {
     TwoSeventy, // 270°
 }
 
+type Coordinates = (i32, i32);
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Placement {
     pub rotation: Rotation,
@@ -22,8 +24,12 @@ pub struct Placement {
 }
 
 impl Placement {
-    pub fn new(rotation: Rotation, x: i32, y: i32) -> Self {
-        Placement { rotation, x, y }
+    pub fn new(rotation: Rotation, coordinates: Coordinates) -> Self {
+        Placement {
+            rotation,
+            x: coordinates.0,
+            y: coordinates.1,
+        }
     }
 }
 
@@ -132,7 +138,7 @@ impl Piece {
                     }
 
                     if is_valid {
-                        allowed_placements.push(Placement::new(rotation, x, y));
+                        allowed_placements.push(Placement::new(rotation, (x, y)));
                     }
                 }
             }
