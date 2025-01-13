@@ -92,6 +92,7 @@ dependencies = [
  "clap",
  "colored",
  "dialoguer",
+ "lazy_static",
  "rayon",
  "strum",
  "strum_macros",

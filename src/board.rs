@@ -1,11 +1,27 @@
+use crate::calendar::Day;
 use crate::piece::{Piece, Rotation};
+use crate::pieces::Pieces;
 use colored::Colorize;
+use lazy_static::lazy_static;
 use std::hash::{Hash, Hasher};
 use strum::IntoEnumIterator;
 
 use rayon::prelude::*;
 use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
+
+/// Configuration
+const BOARD_WIDTH: usize = 9;
+const BOARD_HEIGHT: usize = 6;
+const MISSING_CORNER_COORDINATES: (i32, i32) = (8, 5);
+
+// Static pieces
+lazy_static! {
+    static ref MONTH_PIECE: Piece = Pieces::get_month();
+    static ref DAY_PIECE: Piece = Pieces::get_day();
+    static ref WEEKDAY_PIECE: Piece = Pieces::get_weekday();
+    static ref corner_piece: Piece = Pieces::get_corner();
+}
 
 #[derive(Debug, Clone)]
 pub struct Board<'a> {
@@ -25,6 +41,24 @@ impl<'a> Board<'a> {
             grid,
             blank,
         }
+    }
+
+    pub fn make(day: &Day) -> Self {
+        // Define the initial board.
+        let mut board = Board::new(BOARD_WIDTH, BOARD_HEIGHT, '·');
+
+        // Place the calendar pieces on the board.
+        board.place_piece(&*MONTH_PIECE, Rotation::Zero, day.month.to_coordinates());
+        board.place_piece(&*DAY_PIECE, Rotation::Zero, day.day.to_coordinates());
+        board.place_piece(
+            &*WEEKDAY_PIECE,
+            Rotation::Zero,
+            day.weekday.to_coordinates(),
+        );
+
+        // Place the corner piece on the board.
+        board.place_piece(&corner_piece, Rotation::Zero, MISSING_CORNER_COORDINATES);
+        board
     }
 
     /// Checks if a piece can be placed at the given base position and rotation.

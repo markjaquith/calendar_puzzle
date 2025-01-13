@@ -13,11 +13,6 @@ use pieces::Pieces;
 
 use std::sync::atomic::AtomicBool;
 
-/// Configuration
-const BOARD_WIDTH: usize = 9;
-const BOARD_HEIGHT: usize = 6;
-const MISSING_CORNER_COORDINATES: (i32, i32) = (8, 5);
-
 fn main() {
     let args = Args::parse();
 
@@ -27,25 +22,7 @@ fn main() {
         select_day()
     };
 
-    // Define the initial board.
-    let mut board = Board::new(BOARD_WIDTH, BOARD_HEIGHT, '·');
-
-    // Create the three calendar pieces.
-    let month_piece = Pieces::get_month();
-    let day_piece = Pieces::get_day();
-    let weekday_piece = Pieces::get_weekday();
-
-    // Create the corner piece.
-    let corner_piece = Pieces::get_corner();
-
-    // Place the calendar pieces on the board.
-    board.place_piece(&month_piece, Rotation::Zero, day.month.to_coordinates());
-    board.place_piece(&day_piece, Rotation::Zero, day.day.to_coordinates());
-    board.place_piece(&weekday_piece, Rotation::Zero, day.weekday.to_coordinates());
-
-    // Place the corner piece on the board.
-    board.place_piece(&corner_piece, Rotation::Zero, MISSING_CORNER_COORDINATES);
-
+    let board = Board::make(&day);
     println!("{}, {} {}", day.weekday, day.month, day.day);
     board.display();
     println!();
