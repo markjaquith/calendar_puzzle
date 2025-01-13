@@ -1,6 +1,10 @@
+use strum::IntoEnumIterator;
+
 use colored::Color;
 
 use strum_macros::EnumIter;
+
+use crate::board::Board;
 
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum Rotation {
@@ -10,13 +14,27 @@ pub enum Rotation {
     TwoSeventy, // 270°
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Placement {
+    pub rotation: Rotation,
+    pub x: i32,
+    pub y: i32,
+}
+
+impl Placement {
+    pub fn new(rotation: Rotation, x: i32, y: i32) -> Self {
+        Placement { rotation, x, y }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Piece {
     pub symbol: char,
     pub color: Color,
     pub bg: Color,
-    shape: Vec<(i32, i32)>,          // Default (unrotated) shape
-    rotations: Vec<Vec<(i32, i32)>>, // Precomputed rotations
+    shape: Vec<(i32, i32)>,             // Default (unrotated) shape
+    rotations: Vec<Vec<(i32, i32)>>,    // Precomputed rotations
+    allowed_placements: Vec<Placement>, // Allowed placements for this piece
 }
 
 impl Piece {
@@ -57,6 +75,7 @@ impl Piece {
             shape,
             symbol,
             rotations,
+            allowed_placements: Vec::new(),
         }
     }
 
@@ -83,5 +102,47 @@ impl Piece {
             Rotation::OneEighty => 2,
             Rotation::TwoSeventy => 3,
         }]
+    }
+
+    /// Precomputes and stores allowed placements for this piece based on the given board.
+    /// The board provides its dimensions and current occupied cells (treated as forbidden).
+    pub fn precompute_allowed_placements(&mut self, board: &Board) {
+        let mut allowed_placements = Vec::new();
+
+        for rotation in Rotation::iter() {
+            let shape = self.rotated_to(rotation);
+
+            for y in 0..board.height as i32 {
+                for x in 0..board.width as i32 {
+                    let mut is_valid = true;
+
+                    for &(dx, dy) in shape {
+                        let xx = x + dx;
+                        let yy = y + dy;
+
+                        if xx < 0
+                            || xx >= board.width as i32
+                            || yy < 0
+                            || yy >= board.height as i32
+                            || board.grid[yy as usize][xx as usize].is_some()
+                        {
+                            is_valid = false;
+                            break;
+                        }
+                    }
+
+                    if is_valid {
+                        allowed_placements.push(Placement::new(rotation, x, y));
+                    }
+                }
+            }
+        }
+
+        self.allowed_placements = allowed_placements;
+    }
+
+    /// Gets the allowed positions for this piece.
+    pub fn get_allowed_placements(&self) -> &Vec<Placement> {
+        &self.allowed_placements
     }
 }

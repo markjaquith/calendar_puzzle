@@ -21,6 +21,16 @@ pub struct Args {
     pub today: bool,
 }
 
+impl Args {
+    pub fn get_day(&self) -> Day {
+        if self.today {
+            Day::today()
+        } else {
+            select_day()
+        }
+    }
+}
+
 /// Gets input from the user to create a `Day` struct
 pub fn select_day() -> Day {
     // Choose a month

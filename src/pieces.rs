@@ -1,10 +1,10 @@
-use crate::piece::Piece;
+use crate::{board::Board, piece::Piece};
 
 pub struct Pieces;
 
 impl Pieces {
-    pub fn get_default() -> Vec<Piece> {
-        vec![
+    pub fn get_defaults_for_board(board: &Board) -> Vec<Piece> {
+        let mut pieces = vec![
             // F F
             //   F F
             //   F
@@ -92,7 +92,13 @@ impl Pieces {
                 (255, 255, 255), // White foreground
                 (64, 140, 86),   // Green background
             ),
-        ]
+        ];
+
+        for piece in &mut pieces {
+            piece.precompute_allowed_placements(&board);
+        }
+
+        pieces
     }
 
     pub fn get_month() -> Piece {

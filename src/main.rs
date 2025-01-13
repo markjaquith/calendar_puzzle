@@ -5,9 +5,8 @@ mod piece;
 mod pieces;
 
 use board::Board;
-use calendar::Day;
 use clap::Parser;
-use cli::{select_day, Args};
+use cli::Args;
 use piece::{Piece, Rotation};
 use pieces::Pieces;
 
@@ -16,19 +15,14 @@ use std::sync::atomic::AtomicBool;
 fn main() {
     let args = Args::parse();
 
-    let day = if args.today {
-        Day::today()
-    } else {
-        select_day()
-    };
-
+    let day = args.get_day();
     let board = Board::make(&day);
     println!("{}, {} {}", day.weekday, day.month, day.day);
     board.display();
     println!();
 
     // Define the pieces to place
-    let default_pieces = Pieces::get_default();
+    let default_pieces = Pieces::get_defaults_for_board(&board);
 
     if args.show_pieces {
         println!("Pieces to place:");

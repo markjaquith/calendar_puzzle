@@ -4,7 +4,6 @@ use crate::pieces::Pieces;
 use colored::Colorize;
 use lazy_static::lazy_static;
 use std::hash::{Hash, Hasher};
-use strum::IntoEnumIterator;
 
 use rayon::prelude::*;
 use std::collections::HashSet;
@@ -201,19 +200,15 @@ impl<'a> Board<'a> {
     pub fn find_all_valid_boards_with_new_piece(&self, piece: &'a Piece) -> Vec<Board<'a>> {
         let mut valid_boards: Vec<Board<'a>> = Vec::new();
 
-        for rotation in Rotation::iter() {
-            for y in 0..self.height {
-                for x in 0..self.width {
-                    if self
-                        .can_place_piece(piece, rotation, (x as i32, y as i32))
-                        .is_ok()
-                    {
-                        let mut new_board = self.clone();
-                        new_board.place_piece(piece, rotation, (x as i32, y as i32));
-                        if !new_board.has_dead_end_blanks_not_divisible_by(5) {
-                            valid_boards.push(new_board);
-                        }
-                    }
+        for &placement in piece.get_allowed_placements() {
+            if self
+                .can_place_piece(piece, placement.rotation, (placement.x, placement.y))
+                .is_ok()
+            {
+                let mut new_board = self.clone();
+                new_board.place_piece(piece, placement.rotation, (placement.x, placement.y));
+                if !new_board.has_dead_end_blanks_not_divisible_by(5) {
+                    valid_boards.push(new_board);
                 }
             }
         }
