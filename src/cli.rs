@@ -2,7 +2,11 @@ use dialoguer::{theme::ColorfulTheme, Select};
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 
-use crate::calendar::{Day, Month, MonthDay, Weekday};
+use crate::{
+    board::Board,
+    calendar::{Day, Month, MonthDay, Weekday},
+    piece::{Piece, Placement, Rotation},
+};
 use clap::Parser;
 
 /// Command-line arguments
@@ -71,5 +75,22 @@ pub fn select_day() -> Day {
             println!("Error: {:?}", e);
             std::process::exit(1);
         }
+    }
+}
+
+/// Shows pieces for placement
+pub fn show_pieces(pieces: &Vec<Piece>) {
+    println!("Pieces to place:");
+    for piece in pieces {
+        // Make an example board just big enough to display this piece.
+        let mut example_board = Board::new(
+            piece.get_default_dimensions().0 as usize,
+            piece.get_default_dimensions().1 as usize,
+            ' ',
+        );
+        // Place the piece in the top-left corner for display
+        example_board.place_piece(piece, Placement::new(Rotation::Zero, (0, 0)));
+        example_board.display();
+        println!();
     }
 }

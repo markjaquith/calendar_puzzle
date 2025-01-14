@@ -6,8 +6,8 @@ mod pieces;
 
 use board::Board;
 use clap::Parser;
-use cli::Args;
-use piece::{Piece, Placement, Rotation};
+use cli::{show_pieces, Args};
+use piece::Piece;
 use pieces::Pieces;
 
 use std::sync::atomic::AtomicBool;
@@ -24,37 +24,23 @@ fn main() {
     // Define the pieces to place
     let default_pieces = Pieces::get_defaults_for_board(&board);
 
+    // Handle --show-pieces flag
     if args.show_pieces {
-        println!("Pieces to place:");
-        for piece in &default_pieces {
-            // Make an example board just big enough to display this piece.
-            let mut example_board = Board::new(
-                piece.get_default_dimensions().0 as usize,
-                piece.get_default_dimensions().1 as usize,
-                ' ',
-            );
-            // Place the piece in the top-left corner for display
-            example_board.place_piece(piece, Placement::new(Rotation::Zero, (0, 0)));
-            example_board.display();
-            println!();
-        }
+        show_pieces(&default_pieces);
     }
 
     // Create a mutable list of references to the default pieces.
     let mut pieces: Vec<&Piece> = default_pieces.iter().collect();
 
     // Generate all valid boards that place all pieces.
-    let final_boards =
-        board.find_boards_placing_all_pieces(&mut pieces, &AtomicBool::new(false), args.all);
-
-    if !args.all && final_boards.len() > 1 {
-        println!(
-            "Found {} boards that successfully place all pieces:",
-            final_boards.len()
-        );
-    }
+    let final_boards = board.find_boards_placing_all_pieces(
+        &mut pieces,
+        &AtomicBool::new(false), // Whether any solutions have been found
+        args.all,                // Whether to find all solutions
+    );
 
     for (i, board) in final_boards.iter().enumerate() {
+        // Only display the solution number if --all is used
         if args.all {
             println!("Solution {}:", i + 1);
         }
