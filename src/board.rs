@@ -101,14 +101,30 @@ impl<'a> Board<'a> {
         }
     }
 
-    /// Returns the display representation of the board as a String, including colors.
-    pub fn get_display(&self) -> String {
-        let mut display = String::new();
+    /// Output the board state in a simple string format, for hashing and unit testing
+    /// Like get_display, but without colors or formatting or newlines
+    pub fn get_data(&self) -> String {
+        // Pre-allocate the string with the exact capacity needed
+        let mut data = String::with_capacity(self.width * self.height);
+
+        for row in &self.grid {
+            for cell in row {
+                match cell {
+                    Some(piece) => data.push(piece.symbol), // Push the char directly
+                    None => data.push(self.blank),          // Push the blank char directly
+                }
+            }
+        }
+        data
+    }
+
+    /// Displays the board (colored).
+    pub fn display(&self) {
         for row in &self.grid {
             for cell in row {
                 match cell {
                     Some(piece) => {
-                        let colored_symbol = format!(
+                        print!(
                             "{}{}{}",
                             " ".on_color(piece.bg),
                             piece
@@ -118,19 +134,12 @@ impl<'a> Board<'a> {
                                 .on_color(piece.bg),
                             " ".on_color(piece.bg),
                         );
-                        display.push_str(&colored_symbol);
                     }
-                    None => display.push_str(&format!(" {} ", self.blank)),
+                    None => print!(" {} ", self.blank),
                 }
             }
-            display.push('\n'); // Newline after each row
+            print!("{}", '\n'); // Newline after each row
         }
-        display
-    }
-
-    /// Displays the board in a simple ASCII format.
-    pub fn display(&self) {
-        println!("{}", self.get_display());
     }
 
     /// Scans the board for all contiguous blank areas.
@@ -257,7 +266,7 @@ impl<'a> Board<'a> {
 
 impl PartialEq for Board<'_> {
     fn eq(&self, other: &Self) -> bool {
-        self.get_display() == other.get_display()
+        self.get_data() == other.get_data()
     }
 }
 
@@ -265,6 +274,6 @@ impl Eq for Board<'_> {}
 
 impl Hash for Board<'_> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.get_display().hash(state);
+        self.get_data().hash(state);
     }
 }
