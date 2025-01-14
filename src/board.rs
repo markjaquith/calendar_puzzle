@@ -103,19 +103,16 @@ impl<'a> Board<'a> {
 
     /// Output the board state in a simple string format, for hashing and unit testing
     /// Like get_display, but without colors or formatting or newlines
-    pub fn get_data(&self) -> String {
-        // Pre-allocate the string with the exact capacity needed
-        let mut data = String::with_capacity(self.width * self.height);
-
-        for row in &self.grid {
-            for cell in row {
-                match cell {
-                    Some(piece) => data.push(piece.symbol), // Push the char directly
-                    None => data.push(self.blank),          // Push the blank char directly
-                }
-            }
-        }
-        data
+    pub fn serialize(&self) -> String {
+        self.grid
+            .iter()
+            .flat_map(|row| {
+                row.iter().map(|cell| match cell {
+                    Some(piece) => piece.symbol,
+                    None => self.blank,
+                })
+            })
+            .collect()
     }
 
     /// Displays the board (colored).
@@ -251,7 +248,7 @@ impl<'a> Board<'a> {
 
 impl PartialEq for Board<'_> {
     fn eq(&self, other: &Self) -> bool {
-        self.get_data() == other.get_data()
+        self.serialize() == other.serialize()
     }
 }
 
@@ -259,6 +256,6 @@ impl Eq for Board<'_> {}
 
 impl Hash for Board<'_> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.get_data().hash(state);
+        self.serialize().hash(state);
     }
 }
