@@ -79,7 +79,7 @@ pub fn select_day() -> Day {
 }
 
 /// Shows pieces for placement
-pub fn show_pieces(pieces: &Vec<Piece>) {
+pub fn show_pieces(pieces: &[Piece]) {
     println!("Pieces to place:");
     for piece in pieces {
         // Make an example board just big enough to display this piece.

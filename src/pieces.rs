@@ -3,8 +3,8 @@ use crate::{board::Board, piece::Piece};
 pub struct Pieces;
 
 impl Pieces {
-    pub fn get_defaults_for_board(board: &Board) -> Vec<Piece> {
-        let mut pieces = vec![
+    pub fn get_defaults_for_board(board: &Board) -> [Piece; 10] {
+        let mut pieces = [
             // F F
             //   F F
             //   F

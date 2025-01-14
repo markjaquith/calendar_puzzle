@@ -222,45 +222,30 @@ impl<'a> Board<'a> {
     /// Returns a vector of boards that successfully place all pieces.
     pub fn find_boards_placing_all_pieces(
         &self,
-        pieces: &mut Vec<&'a Piece>,
+        pieces: &[&'a Piece],
         found: &AtomicBool,
         find_all: bool,
     ) -> HashSet<Board<'a>> {
-        // If no pieces are left, return the current board
         if pieces.is_empty() {
             if !find_all {
                 found.store(true, Ordering::Relaxed);
             }
-            let mut final_board = HashSet::new();
-            final_board.insert(self.clone());
-            return final_board;
+            return HashSet::from([self.clone()]);
         }
 
-        // Remove the first piece and find all valid placements
-        let piece = pieces.remove(0);
+        if !find_all && found.load(Ordering::Relaxed) {
+            return HashSet::new();
+        }
+
+        let piece = pieces[0];
         let valid_boards = self.find_all_valid_boards_with_new_piece(piece);
 
-        let all_boards: HashSet<Board<'a>> = valid_boards
+        valid_boards
             .into_par_iter()
             .flat_map(|valid_board| {
-                if !find_all && found.load(Ordering::Relaxed) {
-                    // Return an empty Vec since Rayon requires a parallelizable collection
-                    Vec::new().into_par_iter()
-                } else {
-                    let mut remaining_pieces = pieces.clone();
-                    valid_board
-                        .find_boards_placing_all_pieces(&mut remaining_pieces, found, find_all)
-                        .into_iter()
-                        .collect::<Vec<_>>() // Convert HashSet into Vec
-                        .into_par_iter() // Use the Vec as a parallel iterator
-                }
+                valid_board.find_boards_placing_all_pieces(&pieces[1..], found, find_all)
             })
-            .collect(); // Collect into a HashSet to eliminate duplicates across all results
-
-        // Restore the removed piece for the caller
-        pieces.insert(0, piece);
-
-        all_boards
+            .collect()
     }
 }
 
