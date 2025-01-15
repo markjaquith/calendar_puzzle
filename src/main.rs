@@ -36,11 +36,16 @@ fn main() {
     let mut pieces: Vec<&Piece> = default_pieces.iter().collect();
 
     // Generate all valid boards that place all pieces.
-    let final_boards = board.find_boards_placing_all_pieces(
-        &mut pieces,
-        &AtomicBool::new(false), // Whether any solutions have been found
-        args.all,                // Whether to find all solutions
-    );
+    let mut final_boards = board
+        .find_boards_placing_all_pieces(
+            &mut pieces,
+            &AtomicBool::new(false), // Whether any solutions have been found
+            args.all,                // Whether to find all solutions
+        )
+        .into_iter()
+        .collect::<Vec<_>>();
+
+    final_boards.sort_by(|a, b| a.serialize().cmp(&b.serialize()));
 
     for (i, board) in final_boards.iter().enumerate() {
         // Only display the solution number if --all is used
