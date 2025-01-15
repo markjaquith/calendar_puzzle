@@ -17,15 +17,18 @@ fn main() {
 
     let day = args.get_day();
     let board = Board::make(&day);
-    println!("{}, {} {}", day.weekday, day.month, day.day);
-    board.display();
-    println!();
+
+    if !args.raw {
+        println!("{}, {} {}", day.weekday, day.month, day.day);
+        board.display();
+        println!();
+    }
 
     // Define the pieces to place
     let default_pieces = Pieces::get_defaults_for_board(&board);
 
     // Handle --show-pieces flag
-    if args.show_pieces {
+    if !args.raw && args.show_pieces {
         show_pieces(&default_pieces);
     }
 
@@ -41,11 +44,15 @@ fn main() {
 
     for (i, board) in final_boards.iter().enumerate() {
         // Only display the solution number if --all is used
-        if args.all {
+        if !args.raw && args.all {
             println!("Solution {}:", i + 1);
         }
 
-        board.display();
-        println!();
+        if args.raw {
+            println!("{}", board.serialize());
+        } else {
+            board.display();
+            println!();
+        }
     }
 }

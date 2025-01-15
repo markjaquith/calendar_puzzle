@@ -13,7 +13,7 @@ use clap::Parser;
 #[derive(Parser)]
 pub struct Args {
     /// Show all solutions, not just the first one.
-    #[arg(short, long, default_value = "false")]
+    #[arg(long)]
     pub all: bool,
 
     ///  Show the pieces to place.
@@ -21,8 +21,11 @@ pub struct Args {
     pub show_pieces: bool,
 
     /// Use today's date.
-    #[arg(short, long)]
+    #[arg(long)]
     pub today: bool,
+
+    #[arg(long)]
+    pub raw: bool,
 }
 
 impl Args {
