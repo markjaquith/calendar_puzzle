@@ -36,6 +36,7 @@ impl Placement {
 #[derive(Debug, Clone)]
 pub struct Piece {
     pub symbol: char,
+    pub serialized_symbol: char,
     pub color: Color,
     pub bg: Color,
     shape: Vec<Coordinates>,            // Default (unrotated) shape
@@ -80,6 +81,7 @@ impl Piece {
             },
             shape,
             symbol,
+            serialized_symbol: symbol,
             rotations,
             allowed_placements: Vec::new(),
         }
@@ -102,6 +104,10 @@ impl Piece {
             Rotation::OneEighty => 2,
             Rotation::TwoSeventy => 3,
         }]
+    }
+
+    pub fn serialize_as(&mut self, symbol: char) {
+        self.serialized_symbol = symbol;
     }
 
     /// Precomputes and stores allowed placements for this piece based on the given board.

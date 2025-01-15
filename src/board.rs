@@ -108,7 +108,7 @@ impl<'a> Board<'a> {
             .iter()
             .flat_map(|row| {
                 row.iter().map(|cell| match cell {
-                    Some(piece) => piece.symbol,
+                    Some(piece) => piece.serialized_symbol,
                     None => self.blank,
                 })
             })

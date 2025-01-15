@@ -102,18 +102,26 @@ impl Pieces {
     }
 
     pub fn get_month() -> Piece {
-        Piece::new('☻', vec![(0, 0)], (255, 255, 255), (0, 0, 0))
+        let mut piece = Piece::new('☻', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        piece.serialize_as('m');
+        piece
     }
 
     pub fn get_day() -> Piece {
-        Piece::new('◉', vec![(0, 0)], (255, 255, 255), (0, 0, 0))
+        let mut piece = Piece::new('◉', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        piece.serialize_as('d');
+        piece
     }
 
     pub fn get_weekday() -> Piece {
-        Piece::new('☼', vec![(0, 0)], (255, 255, 255), (0, 0, 0))
+        let mut piece = Piece::new('☼', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        piece.serialize_as('d');
+        piece
     }
 
     pub fn get_corner() -> Piece {
-        Piece::new(' ', vec![(0, 0)], (255, 255, 255), (0, 0, 0))
+        let mut piece = Piece::new(' ', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        piece.serialize_as('x');
+        piece
     }
 }
