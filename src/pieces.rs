@@ -1,8 +1,31 @@
 use crate::{board::Board, piece::Piece};
+use once_cell::sync::Lazy;
+use std::collections::HashMap;
+
+pub static PIECES: Lazy<HashMap<char, Piece>> = Lazy::new(|| {
+    let mut pieces = HashMap::new();
+
+    let defaults = Pieces::get_defaults_for_board(&Board::new(9, 6, '·'));
+
+    for piece in defaults.iter() {
+        pieces.insert(piece.symbol, piece.clone());
+    }
+
+    pieces.insert('m', Pieces::get_month());
+    pieces.insert('d', Pieces::get_day());
+    pieces.insert('w', Pieces::get_weekday());
+    pieces.insert('x', Pieces::get_corner());
+
+    pieces
+});
 
 pub struct Pieces;
 
 impl Pieces {
+    pub fn by_symbol(symbol: char) -> &'static Piece {
+        &PIECES[&symbol]
+    }
+
     pub fn get_defaults_for_board(board: &Board) -> [Piece; 10] {
         let mut pieces = [
             // F F

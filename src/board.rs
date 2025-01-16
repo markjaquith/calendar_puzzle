@@ -23,14 +23,14 @@ lazy_static! {
 }
 
 #[derive(Debug, Clone)]
-pub struct Board<'a> {
-    pub width: usize,                      // Width of the board
-    pub height: usize,                     // Height of the board
-    pub grid: Vec<Vec<Option<&'a Piece>>>, // Store Piece type for each cell
-    blank: char,                           // Symbol for empty cells
+pub struct Board {
+    pub width: usize,                 // The width of the board
+    pub height: usize,                // The height of the board
+    pub grid: Vec<Vec<Option<char>>>, // Store Piece type for each cell
+    blank: char,                      // Symbol for empty cells
 }
 
-impl<'a> Board<'a> {
+impl Board {
     /// Creates a new Board with the given dimensions.
     pub fn new(width: usize, height: usize, blank: char) -> Self {
         let grid = vec![vec![None; width]; height];
@@ -69,7 +69,7 @@ impl<'a> Board<'a> {
     }
 
     /// Checks if a piece can be placed at the given base position and rotation.
-    pub fn can_place_piece(&self, piece: &'a Piece, placement: Placement) -> Result<(), String> {
+    pub fn can_place_piece(&self, piece: &Piece, placement: Placement) -> Result<(), String> {
         for &(dx, dy) in piece.rotated_to(placement.rotation) {
             let x = placement.x + dx;
             let y = placement.y + dy;
@@ -84,13 +84,13 @@ impl<'a> Board<'a> {
     }
 
     /// Places a piece on the board if it fits, at a specific rotation.
-    pub fn place_piece(&mut self, piece: &'a Piece, placement: Placement) -> bool {
+    pub fn place_piece(&mut self, piece: &Piece, placement: Placement) -> bool {
         match self.can_place_piece(piece, placement) {
             Ok(_) => {
                 for &(dx, dy) in piece.rotated_to(placement.rotation) {
                     let x = placement.x + dx;
                     let y = placement.y + dy;
-                    self.grid[y as usize][x as usize] = Some(&piece);
+                    self.grid[y as usize][x as usize] = Some(piece.serialized_symbol);
                 }
                 true
             }
@@ -108,8 +108,8 @@ impl<'a> Board<'a> {
             .iter()
             .flat_map(|row| {
                 row.iter().map(|cell| match cell {
-                    Some(piece) => piece.serialized_symbol,
-                    None => self.blank,
+                    Some(char) => char,
+                    None => &self.blank,
                 })
             })
             .collect()
@@ -120,7 +120,8 @@ impl<'a> Board<'a> {
         for row in &self.grid {
             for cell in row {
                 match cell {
-                    Some(piece) => {
+                    Some(char) => {
+                        let piece = Pieces::by_symbol(*char);
                         print!(
                             "{}{}{}",
                             " ".on_color(piece.bg),
@@ -199,8 +200,8 @@ impl<'a> Board<'a> {
     }
 
     /// Finds all valid boards by placing a new piece in all possible positions and rotations.
-    pub fn find_all_valid_boards_with_new_piece(&self, piece: &'a Piece) -> Vec<Board<'a>> {
-        let mut valid_boards: Vec<Board<'a>> = Vec::new();
+    pub fn find_all_valid_boards_with_new_piece(&self, piece: &Piece) -> Vec<Board> {
+        let mut valid_boards: Vec<Board> = Vec::new();
 
         for &placement in piece.get_allowed_placements() {
             if self.can_place_piece(piece, placement).is_ok() {
@@ -219,10 +220,10 @@ impl<'a> Board<'a> {
     /// Returns a vector of boards that successfully place all pieces.
     pub fn find_boards_placing_all_pieces(
         &self,
-        pieces: &[&'a Piece],
+        pieces: &[&Piece],
         found: &AtomicBool,
         find_all: bool,
-    ) -> HashSet<Board<'a>> {
+    ) -> HashSet<Board> {
         if pieces.is_empty() {
             if !find_all {
                 found.store(true, Ordering::Relaxed);
@@ -246,15 +247,15 @@ impl<'a> Board<'a> {
     }
 }
 
-impl PartialEq for Board<'_> {
+impl PartialEq for Board {
     fn eq(&self, other: &Self) -> bool {
         self.serialize() == other.serialize()
     }
 }
 
-impl Eq for Board<'_> {}
+impl Eq for Board {}
 
-impl Hash for Board<'_> {
+impl Hash for Board {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.serialize().hash(state);
     }

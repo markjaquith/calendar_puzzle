@@ -93,6 +93,7 @@ dependencies = [
  "colored",
  "dialoguer",
  "lazy_static",
+ "once_cell",
  "rayon",
  "strum",
  "strum_macros",
