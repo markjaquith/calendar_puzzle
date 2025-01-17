@@ -100,7 +100,7 @@ impl Month {
 }
 
 /// Represents the days of the week.
-#[derive(EnumIter, EnumString, Display, AsRefStr, Clone)]
+#[derive(EnumIter, EnumString, Display, AsRefStr, Clone, Debug, PartialEq)]
 pub enum Weekday {
     Monday,
     Tuesday,
@@ -180,6 +180,7 @@ pub enum MonthDayError {
     InvalidFormat,
     OutOfRange,
 }
+
 impl std::error::Error for MonthDayError {}
 
 impl std::fmt::Display for MonthDayError {
@@ -207,5 +208,31 @@ impl FromStr for MonthDay {
 impl std::fmt::Display for MonthDay {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_monthday_from_str() {
+        assert_eq!(MonthDay::from_str("1").unwrap(), MonthDay(1));
+        assert_eq!(MonthDay::from_str("31").unwrap(), MonthDay(31));
+        assert!(MonthDay::from_str("0").is_err());
+        assert!(MonthDay::from_str("32").is_err());
+        assert!(MonthDay::from_str("a").is_err());
+    }
+
+    #[test]
+    fn test_weekday_from_str() {
+        assert_eq!(Weekday::from_str("Monday").unwrap(), Weekday::Monday);
+        assert_eq!(Weekday::from_str("Tuesday").unwrap(), Weekday::Tuesday);
+        assert_eq!(Weekday::from_str("Wednesday").unwrap(), Weekday::Wednesday);
+        assert_eq!(Weekday::from_str("Thursday").unwrap(), Weekday::Thursday);
+        assert_eq!(Weekday::from_str("Friday").unwrap(), Weekday::Friday);
+        assert_eq!(Weekday::from_str("Saturday").unwrap(), Weekday::Saturday);
+        assert_eq!(Weekday::from_str("Sunday").unwrap(), Weekday::Sunday);
+        assert!(Weekday::from_str("Foo").is_err());
     }
 }

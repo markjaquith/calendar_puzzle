@@ -1,5 +1,5 @@
 use crate::calendar::Day;
-use crate::piece::{Piece, Placement, Rotation};
+use crate::piece::{Coordinates, Piece, Placement, Rotation};
 use crate::pieces::Pieces;
 use colored::Colorize;
 use lazy_static::lazy_static;
@@ -68,8 +68,13 @@ impl Board {
         board
     }
 
-    /// Checks if a piece can be placed at the given base position and rotation.
-    pub fn can_place_piece(&self, piece: &Piece, placement: Placement) -> Result<(), String> {
+    /// Checks if a piece can be placed at the given base position and rotation, returning valid coordinates.
+    pub fn can_place_piece(
+        &self,
+        piece: &Piece,
+        placement: Placement,
+    ) -> Result<Vec<Coordinates>, String> {
+        let mut coordinates = Vec::new();
         for &(dx, dy) in piece.rotated_to(placement.rotation) {
             let x = placement.x + dx;
             let y = placement.y + dy;
@@ -79,17 +84,16 @@ impl Board {
             if self.grid[y as usize][x as usize].is_some() {
                 return Err(format!("Position ({}, {}) is already occupied.", x, y));
             }
+            coordinates.push((x, y));
         }
-        Ok(())
+        Ok(coordinates)
     }
 
-    /// Places a piece on the board if it fits, at a specific rotation.
+    /// Places a piece on the board if it fits, using precomputed coordinates.
     pub fn place_piece(&mut self, piece: &Piece, placement: Placement) -> bool {
         match self.can_place_piece(piece, placement) {
-            Ok(_) => {
-                for &(dx, dy) in piece.rotated_to(placement.rotation) {
-                    let x = placement.x + dx;
-                    let y = placement.y + dy;
+            Ok(coords) => {
+                for (x, y) in coords {
                     self.grid[y as usize][x as usize] = Some(piece.symbol);
                 }
                 true
