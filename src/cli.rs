@@ -26,12 +26,27 @@ pub struct Args {
 
     #[arg(long)]
     pub raw: bool,
+
+    #[arg(long)]
+    pub month: Option<Month>,
+
+    #[arg(long)]
+    pub day: Option<MonthDay>,
+
+    #[arg(long)]
+    pub weekday: Option<Weekday>,
 }
 
 impl Args {
     pub fn get_day(&self) -> Day {
         if self.today {
             Day::today()
+        } else if let (Some(month), Some(day), Some(weekday)) = (
+            self.month.as_ref(),
+            self.day.as_ref(),
+            self.weekday.as_ref(),
+        ) {
+            Day::new(month.clone(), day.clone(), weekday.clone()).unwrap()
         } else {
             select_day()
         }

@@ -50,7 +50,7 @@ impl Day {
 }
 
 /// Represents the months of the year.
-#[derive(EnumIter, EnumString, Display, AsRefStr)]
+#[derive(EnumIter, EnumString, Display, AsRefStr, Clone)]
 pub enum Month {
     January,
     February,
@@ -100,7 +100,7 @@ impl Month {
 }
 
 /// Represents the days of the week.
-#[derive(EnumIter, EnumString, Display, AsRefStr)]
+#[derive(EnumIter, EnumString, Display, AsRefStr, Clone)]
 pub enum Weekday {
     Monday,
     Tuesday,
@@ -125,7 +125,7 @@ impl Weekday {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Clone)]
 pub struct MonthDay(u8);
 
 impl MonthDay {
@@ -171,6 +171,35 @@ impl MonthDay {
             30 => (6, 5),
             31 => (5, 2), // Weird one
             _ => unreachable!(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum MonthDayError {
+    InvalidFormat,
+    OutOfRange,
+}
+impl std::error::Error for MonthDayError {}
+
+impl std::fmt::Display for MonthDayError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MonthDayError::InvalidFormat => write!(f, "Invalid format"),
+            MonthDayError::OutOfRange => write!(f, "Day must be between 1 and 31"),
+        }
+    }
+}
+
+impl FromStr for MonthDay {
+    type Err = MonthDayError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let day = s.parse::<u8>().map_err(|_| MonthDayError::InvalidFormat)?;
+        if day < 1 || day > 31 {
+            Err(MonthDayError::OutOfRange)
+        } else {
+            Ok(MonthDay(day))
         }
     }
 }
