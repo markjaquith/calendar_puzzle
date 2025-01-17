@@ -90,7 +90,7 @@ impl Board {
                 for &(dx, dy) in piece.rotated_to(placement.rotation) {
                     let x = placement.x + dx;
                     let y = placement.y + dy;
-                    self.grid[y as usize][x as usize] = Some(piece.serialized_symbol);
+                    self.grid[y as usize][x as usize] = Some(piece.symbol);
                 }
                 true
             }
@@ -126,7 +126,7 @@ impl Board {
                             "{}{}{}",
                             " ".on_color(piece.bg),
                             piece
-                                .symbol
+                                .display_symbol
                                 .to_string()
                                 .color(piece.color)
                                 .on_color(piece.bg),

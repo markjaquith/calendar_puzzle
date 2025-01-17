@@ -8,7 +8,7 @@ pub static PIECES: Lazy<HashMap<char, Piece>> = Lazy::new(|| {
     let defaults = Pieces::get_defaults_for_board(&Board::new(9, 6, '·'));
 
     for piece in defaults.iter() {
-        pieces.insert(piece.symbol, piece.clone());
+        pieces.insert(piece.display_symbol, piece.clone());
     }
 
     pieces.insert('m', Pieces::get_month());
@@ -125,26 +125,26 @@ impl Pieces {
     }
 
     pub fn get_month() -> Piece {
-        let mut piece = Piece::new('☻', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
-        piece.serialize_as('m');
+        let mut piece = Piece::new('m', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        piece.display_as('☻');
         piece
     }
 
     pub fn get_day() -> Piece {
-        let mut piece = Piece::new('◉', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
-        piece.serialize_as('d');
+        let mut piece = Piece::new('d', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        piece.display_as('◉');
         piece
     }
 
     pub fn get_weekday() -> Piece {
-        let mut piece = Piece::new('☼', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
-        piece.serialize_as('d');
+        let mut piece = Piece::new('w', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        piece.display_as('☼');
         piece
     }
 
     pub fn get_corner() -> Piece {
-        let mut piece = Piece::new(' ', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
-        piece.serialize_as('x');
+        let mut piece = Piece::new('x', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        piece.display_as(' ');
         piece
     }
 }
