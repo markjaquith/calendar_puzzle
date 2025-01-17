@@ -43,7 +43,7 @@ fn main() {
             args.all,                // Whether to find all solutions
         )
         .into_iter()
-        .collect::<Vec<_>>();
+        .collect::<Vec<Board>>();
 
     final_boards.sort_by(|a, b| a.serialize().cmp(&b.serialize()));
 
