@@ -110,8 +110,8 @@ pub fn show_pieces(pieces: &[Piece]) {
     for piece in pieces {
         // Make an example board just big enough to display this piece.
         let mut example_board = Board::new(
-            piece.get_default_dimensions().0 as usize,
-            piece.get_default_dimensions().1 as usize,
+            piece.get_dimensions_at_rotation(Rotation::Zero).0 as usize,
+            piece.get_dimensions_at_rotation(Rotation::Zero).1 as usize,
             ' ',
         );
         // Place the piece in the top-left corner for display

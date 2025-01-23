@@ -39,7 +39,6 @@ pub struct Piece {
     pub symbol: char,
     pub color: Color,
     pub bg: Color,
-    shape: Vec<Coordinates>,            // Default (unrotated) shape
     rotations: Vec<Vec<Coordinates>>,   // Precomputed rotations
     allowed_placements: Vec<Placement>, // Allowed placements for this piece
 }
@@ -79,7 +78,6 @@ impl Piece {
                 g: bg.1,
                 b: bg.2,
             },
-            shape,
             display_symbol: symbol,
             symbol,
             rotations,
@@ -88,12 +86,14 @@ impl Piece {
     }
 
     /// Get the dimensions of the default (unrotated) shape.
-    pub fn get_default_dimensions(&self) -> (i32, i32) {
+    pub fn get_dimensions_at_rotation(&self, rotation: Rotation) -> (i32, i32) {
         // Iterate over the shape and find the maximum x and y values of its coordinates
         // which is therefore the width and height of the shape.
-        self.shape.iter().fold((0, 0), |(max_x, max_y), &(x, y)| {
-            (max_x.max(x), max_y.max(y))
-        })
+        self.rotated_to(rotation)
+            .iter()
+            .fold((0, 0), |(max_x, max_y), &(x, y)| {
+                (max_x.max(x + 1), max_y.max(y + 1))
+            })
     }
 
     /// Get the shape at a specific rotation.
