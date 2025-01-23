@@ -18,6 +18,16 @@ fn main() {
     let day = args.get_day();
     let board = Board::make(&day);
 
+    // Handle --hint flag by only displaying the first solution with a certain number
+    let hint = match args.hint {
+        Some(hint) if hint < 10 && hint > 0 => Some(hint),
+        Some(_hint) => {
+            eprintln!("Hint number must be between 1 and 9.");
+            std::process::exit(1);
+        }
+        None => None,
+    };
+
     if !args.raw {
         println!("{}, {} {}", day.weekday, day.month, day.day);
         board.display();
@@ -47,17 +57,27 @@ fn main() {
 
     final_boards.sort_by(|a, b| a.serialize().cmp(&b.serialize()));
 
+    // Handle --hint flag by only displaying the first solution with a certain number
+    match hint {
+        Some(hint) => {
+            final_boards = final_boards
+                .into_iter()
+                .map(|b| b.hint_pieces(hint))
+                .collect();
+        }
+        None => {}
+    }
+
     for (i, board) in final_boards.iter().enumerate() {
         // Only display the solution number if --all is used
         if !args.raw && args.all {
+            println!();
             println!("Solution {}:", i + 1);
         }
 
-        if args.raw {
-            println!("{}", board.serialize());
-        } else {
-            board.display();
-            println!();
+        match args.raw {
+            true => println!("{}", board.serialize()),
+            false => board.display(),
         }
     }
 }

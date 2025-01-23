@@ -2,11 +2,12 @@ use crate::calendar::Day;
 use crate::piece::{Coordinates, Piece, Placement, Rotation};
 use crate::pieces::Pieces;
 use colored::Colorize;
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use std::hash::{Hash, Hasher};
 
 use rayon::prelude::*;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 /// Configuration
@@ -40,6 +41,140 @@ impl Board {
             grid,
             blank,
         }
+    }
+
+    pub fn hint_pieces(&self, hint: usize) -> Self {
+        let coords_map = self.collect_piece_coordinates();
+        let adjacency = Self::build_piece_adjacency(&coords_map);
+        let boundary_map = self.build_boundary_adjacency(&coords_map);
+        let all_symbols: Vec<char> = coords_map.keys().copied().collect();
+        let best_subset =
+            Self::pick_subset_max_combined_adjacency(&all_symbols, &adjacency, &boundary_map, hint);
+        self.create_hint_board(&best_subset)
+    }
+
+    fn collect_piece_coordinates(&self) -> HashMap<char, Vec<(usize, usize)>> {
+        let mut coords_map = HashMap::new();
+        for (y, row) in self.grid.iter().enumerate() {
+            for (x, &cell) in row.iter().enumerate() {
+                if let Some(ch) = cell {
+                    if ch.is_ascii_uppercase() {
+                        coords_map.entry(ch).or_insert_with(Vec::new).push((x, y));
+                    }
+                }
+            }
+        }
+        coords_map
+    }
+
+    fn build_piece_adjacency(
+        coords_map: &HashMap<char, Vec<(usize, usize)>>,
+    ) -> HashMap<(char, char), usize> {
+        let mut adjacency = HashMap::new();
+
+        // Gather all piece symbols
+        let symbols: Vec<char> = coords_map.keys().copied().collect();
+
+        for &a in &symbols {
+            for &b in &symbols {
+                // We'll fill adjacency for (a,b) and (b,a) so we can do adjacency.get(&(a,b)) either way
+                if a < b {
+                    let mut count = 0;
+                    for &(x, y) in &coords_map[&a] {
+                        for neighbor in [
+                            (x + 1, y),
+                            (x.wrapping_sub(1), y),
+                            (x, y + 1),
+                            (x, y.wrapping_sub(1)),
+                        ] {
+                            if coords_map[&b].contains(&neighbor) {
+                                count += 1;
+                            }
+                        }
+                    }
+                    adjacency.insert((a, b), count);
+                    adjacency.insert((b, a), count);
+                }
+            }
+        }
+
+        adjacency
+    }
+
+    fn build_boundary_adjacency(
+        &self,
+        coords_map: &HashMap<char, Vec<(usize, usize)>>,
+    ) -> HashMap<char, usize> {
+        let mut boundary_map = HashMap::new();
+
+        for (&sym, coords) in coords_map {
+            let mut boundary_score = 0;
+            for &(x, y) in coords {
+                // If you want to count each edge that touches the boundary:
+                if x == 0 {
+                    boundary_score += 1;
+                }
+                if x == self.width - 1 {
+                    boundary_score += 1;
+                }
+                if y == 0 {
+                    boundary_score += 1;
+                }
+                if y == self.height - 1 {
+                    boundary_score += 1;
+                }
+            }
+            boundary_map.insert(sym, boundary_score);
+        }
+
+        boundary_map
+    }
+
+    fn pick_subset_max_combined_adjacency(
+        symbols: &[char],
+        adjacency: &HashMap<(char, char), usize>,
+        boundary: &HashMap<char, usize>,
+        k: usize,
+    ) -> Vec<char> {
+        let mut best_subset = Vec::new();
+        let mut best_score = 0;
+
+        // All subsets of symbols of size k
+        for combo in symbols.iter().copied().combinations(k) {
+            // Sum boundary adjacency
+            let boundary_sum: usize = combo.iter().map(|&c| boundary[&c]).sum();
+
+            // Sum pairwise adjacency
+            let pairwise_sum: usize = combo
+                .iter()
+                .tuple_combinations()
+                .map(|(a, b)| adjacency.get(&(*a, *b)).copied().unwrap_or(0))
+                .sum();
+
+            let total_score = boundary_sum + pairwise_sum;
+            if total_score > best_score {
+                best_score = total_score;
+                best_subset = combo;
+            }
+        }
+
+        best_subset
+    }
+
+    fn create_hint_board(&self, keep_syms: &[char]) -> Board {
+        let mut hint_board = self.clone();
+        let keep_set: HashSet<char> = keep_syms.iter().copied().collect();
+
+        for y in 0..hint_board.height {
+            for x in 0..hint_board.width {
+                if let Some(ch) = hint_board.grid[y][x] {
+                    if ch.is_ascii_uppercase() && !keep_set.contains(&ch) {
+                        hint_board.grid[y][x] = None; // remove the piece
+                    }
+                }
+            }
+        }
+        hint_board
     }
 
     pub fn make(day: &Day) -> Self {

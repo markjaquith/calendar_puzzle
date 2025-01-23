@@ -35,6 +35,9 @@ pub struct Args {
 
     #[arg(long)]
     pub weekday: Option<Weekday>,
+
+    #[arg(long)]
+    pub hint: Option<usize>,
 }
 
 impl Args {
