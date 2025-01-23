@@ -24,18 +24,23 @@ pub struct Args {
     #[arg(long)]
     pub today: bool,
 
+    /// Use raw text output
     #[arg(long)]
     pub raw: bool,
 
+    /// The month
     #[arg(long)]
     pub month: Option<Month>,
 
+    /// The day of the month
     #[arg(long)]
     pub day: Option<MonthDay>,
 
+    /// The day of the week
     #[arg(long)]
     pub weekday: Option<Weekday>,
 
+    /// Hint <HINT> pieces instead of giving full solutions
     #[arg(long)]
     pub hint: Option<usize>,
 }
