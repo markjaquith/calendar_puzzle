@@ -184,21 +184,21 @@ impl Board {
         // Place the calendar pieces on the board.
         board.place_piece(
             &*MONTH_PIECE,
-            Placement::new(Rotation::Zero, day.month.to_coordinates()),
+            Placement::new(Rotation::Zero, false, day.month.to_coordinates()),
         );
         board.place_piece(
             &*DAY_PIECE,
-            Placement::new(Rotation::Zero, day.day.to_coordinates()),
+            Placement::new(Rotation::Zero, false, day.day.to_coordinates()),
         );
         board.place_piece(
             &*WEEKDAY_PIECE,
-            Placement::new(Rotation::Zero, day.weekday.to_coordinates()),
+            Placement::new(Rotation::Zero, false, day.weekday.to_coordinates()),
         );
 
         // Place the corner piece on the board.
         board.place_piece(
             &corner_piece,
-            Placement::new(Rotation::Zero, MISSING_CORNER_COORDINATES),
+            Placement::new(Rotation::Zero, false, MISSING_CORNER_COORDINATES),
         );
         board
     }
@@ -210,7 +210,7 @@ impl Board {
         placement: Placement,
     ) -> Result<Vec<Coordinates>, String> {
         let mut coordinates = Vec::new();
-        for &(dx, dy) in piece.rotated_to(placement.rotation) {
+        for &(dx, dy) in piece.get_shape(placement.rotation, placement.flipped) {
             let x = placement.x + dx;
             let y = placement.y + dy;
             if x < 0 || y < 0 || x >= self.width as i32 || y >= self.height as i32 {

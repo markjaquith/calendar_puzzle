@@ -36,6 +36,7 @@ impl Pieces {
                 vec![(0, 0), (1, 0), (1, 1), (1, 2), (2, 1)],
                 (0, 0, 0),       // Black foreground
                 (255, 204, 102), // Light orange background
+                true,            // Flippable
             ),
             // T T T
             //   T
@@ -45,6 +46,7 @@ impl Pieces {
                 vec![(0, 0), (1, 0), (2, 0), (1, 1), (1, 2)],
                 (0, 0, 0),      // Black foreground
                 (120, 81, 169), // Purple background
+                false,          // Not flippable
             ),
             // U U
             // U
@@ -54,6 +56,7 @@ impl Pieces {
                 vec![(0, 0), (1, 0), (0, 1), (0, 2), (1, 2)],
                 (0, 0, 0),       // Black foreground
                 (239, 235, 231), // Light beige background
+                false,           // Not flippable
             ),
             // Z
             // Z Z Z
@@ -63,6 +66,7 @@ impl Pieces {
                 vec![(0, 0), (1, 0), (1, 1), (1, 2), (2, 2)],
                 (120, 60, 60),   // Dark reddish-brown foreground
                 (255, 255, 255), // White background
+                false,           // Not flippable
             ),
             // L L L L
             // L
@@ -71,6 +75,7 @@ impl Pieces {
                 vec![(0, 0), (1, 0), (2, 0), (3, 0), (0, 1)],
                 (255, 255, 255), // White foreground
                 (0, 102, 204),   // Blue background
+                false,           // Not flippable
             ),
             // V
             // V
@@ -80,6 +85,7 @@ impl Pieces {
                 vec![(0, 0), (0, 1), (0, 2), (1, 2), (2, 2)],
                 (255, 255, 255), // White foreground
                 (88, 28, 71),    // Deep magenta background
+                false,           // Not flippable
             ),
             // N
             // N N
@@ -90,6 +96,7 @@ impl Pieces {
                 vec![(0, 0), (0, 1), (1, 1), (1, 2), (1, 3)],
                 (255, 255, 255), // White foreground
                 (102, 204, 153), // Soft teal background
+                false,           // Not flippable
             ),
             // Y Y Y Y
             //   Y
@@ -98,6 +105,7 @@ impl Pieces {
                 vec![(0, 0), (1, 0), (2, 0), (3, 0), (1, 1)],
                 (255, 255, 255), // White foreground
                 (204, 102, 255), // Light purple background
+                false,           // Not flippable
             ),
             // P
             // P P
@@ -107,6 +115,7 @@ impl Pieces {
                 vec![(0, 0), (0, 1), (1, 1), (0, 2), (1, 2)],
                 (255, 255, 255), // White foreground
                 (204, 102, 0),   // Orange background
+                false,           // Not flippable
             ),
             // I I I I I
             Piece::new(
@@ -114,6 +123,7 @@ impl Pieces {
                 vec![(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)],
                 (255, 255, 255), // White foreground
                 (64, 140, 86),   // Green background
+                false,           // Not flippable
             ),
         ];
 
@@ -125,25 +135,25 @@ impl Pieces {
     }
 
     pub fn get_month() -> Piece {
-        let mut piece = Piece::new('m', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        let mut piece = Piece::new('m', vec![(0, 0)], (255, 255, 255), (0, 0, 0), false);
         piece.display_as('☻');
         piece
     }
 
     pub fn get_day() -> Piece {
-        let mut piece = Piece::new('d', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        let mut piece = Piece::new('d', vec![(0, 0)], (255, 255, 255), (0, 0, 0), false);
         piece.display_as('◉');
         piece
     }
 
     pub fn get_weekday() -> Piece {
-        let mut piece = Piece::new('w', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        let mut piece = Piece::new('w', vec![(0, 0)], (255, 255, 255), (0, 0, 0), false);
         piece.display_as('☼');
         piece
     }
 
     pub fn get_corner() -> Piece {
-        let mut piece = Piece::new('x', vec![(0, 0)], (255, 255, 255), (0, 0, 0));
+        let mut piece = Piece::new('x', vec![(0, 0)], (255, 255, 255), (0, 0, 0), false);
         piece.display_as(' ');
         piece
     }
